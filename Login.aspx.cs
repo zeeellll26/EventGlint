@@ -36,16 +36,14 @@ namespace EventGlint
             if(usercount > 0)
             {
                 Session["UserEmail"] = email;
-                Response.Redirect("Dashboard.aspx");
+                Response.Redirect("");
             }
             else
             {
                 Response.Write("<script>alert('Invalid Email!');</script>");
             }
 
-            //String query = "select email, password from UserLogin where email = 'mail' and password = 'pass' ";
-
-            //SqlDataAdapter adpt = new SqlDataAdapter(query, con);
+           
 
         }
     }
