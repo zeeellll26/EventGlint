@@ -13,38 +13,37 @@ namespace EventGlint
     public partial class Login : System.Web.UI.Page
     {
         String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
-        protected void Page_Load(object sender, EventArgs e)
-        {
-        }
+        //protected void Page_Load(object sender, EventArgs e)
+        //{
+        //}
 
-        protected void btn_Login_Click(object sender, EventArgs e)
-        {
-            string email = txt_Email.Text.Trim();
-            string pass = txt_Password.Text;
+        
 
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
+        //protected void btn_Login_Click1(object sender, EventArgs e)
+        //{
+        //    string email = txt_Email.Text.Trim();
+        //    string pass = txt_Password.Text;
 
-            String count = "SELECT COUNT(*) FROM UserLogin";
-            SqlCommand cmd = new SqlCommand(count, con);
+        //    SqlConnection con = new SqlConnection(strcon);
+        //    con.Open();
 
-            cmd.Parameters.AddWithValue("@email", email);
-            cmd.Parameters.AddWithValue("@pass", pass);
+        //    String count = "SELECT COUNT(*) FROM UserLogin";
+        //    SqlCommand cmd = new SqlCommand(count, con);
 
-            int usercount = (int)cmd.ExecuteScalar();
+        //    cmd.Parameters.AddWithValue("@email", email);
+        //    cmd.Parameters.AddWithValue("@pass", pass);
 
-            if(usercount > 0)
-            {
-                Session["UserEmail"] = email;
-                Response.Redirect("");
-            }
-            else
-            {
-                Response.Write("<script>alert('Invalid Email!');</script>");
-            }
+        //    int usercount = (int)cmd.ExecuteScalar();
 
-           
-
-        }
+        //    if (usercount > 0)
+        //    {
+        //        Session["UserEmail"] = email;
+        //        Response.Redirect("");
+        //    }
+        //    else
+        //    {
+        //        Response.Write("<script>alert('Invalid Email!');</script>");
+        //    }
+        //}
     }
 }

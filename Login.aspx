@@ -1,49 +1,93 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Login.aspx.cs" Inherits="EventGlint.Login" %>
 
 <!DOCTYPE html>
-<html>
-<head runat="server">
-    <title>EventGlint - Book Your Next Event</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="Login.css" />
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login & Signup Form</title>
+    <link rel="stylesheet" href="Login.css"/>
+
 </head>
 <body>
-    <form id="form1" runat="server">
-        <div class="login-card">
-            <div class="logo">
-                <div style="font-size: 3rem; background: linear-gradient(135deg, #667eea, #764ba2); line-height: 1;">✓</div>  <!-- Checkmark icon -->
-                <h1>EventGlint</h1>
-                <p class="subtext">Book Your Next Event</p>
-            </div>
-            <div class="mb-3">
-                <asp:TextBox ID="txt_Email" runat="server" CssClass="form-control" placeholder="Email" TextMode="Email"></asp:TextBox>
-            </div>
-            <div class="mb-3">
-                <asp:TextBox ID="txt_Password" runat="server" CssClass="form-control" placeholder="Password" TextMode="Password"></asp:TextBox>
-            </div>
-            <asp:Button ID="btn_Login" runat="server" Text="Login" CssClass="btn btn-primary btn-login mb-3" OnClick="btn_Login_Click" />
-            
-            <div class="text-center mb-3">
-                <a href="#" class="forgot-link">Forgot?</a>
-            </div>
-            
-            <div class="row g-2 mb-3">
-                <div class="col">
-                    <button type="button" class="btn social-btn w-100"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/facebook.svg" width="20" height="20" alt="Facebook"> Sign in with Facebook</button>
+
+     <div class="container">
+        <div class="curved-shape"></div>
+        <div class="curved-shape2"></div>
+        <div class="form-box Login">
+            <h2 class="animation" style="--D:0; --S:21">Login</h2>
+            <form action="#">
+                <div class="input-box animation" style="--D:1; --S:22">
+                    <input type="text"/>
+                    <label for="">Username</label>
+                    <box-icon type='solid' name='user' color="gray"></box-icon>
                 </div>
-            </div>
-            <div class="row g-2 mb-3">
-                <div class="col">
-                    <button type="button" class="btn social-btn w-100"><img src="https://cdn.jsdelivr.net/npm/simple-icons@v8/icons/google.svg" width="20" height="20" alt="Google"> Sign in with Google</button>
+
+                <div class="input-box animation" style="--D:2; --S:23">
+                    <input type="password"/>
+                    <label for="">Password</label>
+                    <box-icon name='lock-alt' type='solid' color="gray"></box-icon>
                 </div>
-            </div>
-            
-            <div class="text-center">
-                <span>Don't have an account? </span>
-                <a href="Register.aspx" class="signup-link">Sign up</a>
-            </div>
+
+                <div class="input-box animation" style="--D:3; --S:24">
+                    <button class="btn" type="submit">Login</button>
+                </div>
+
+                <div class="regi-link animation" style="--D:4; --S:25">
+                    <p style="color:black">Don't have an account? <br/> <a href="#" class="SignUpLink">Sign Up</a></p>
+                </div>
+            </form>
         </div>
-    </form>
-</body>
+
+        <div class="info-content Login">
+            <h2 class="animation" style="--D:0; --S:20">WELCOME BACK!</h2>
+            <p class="animation" style="--D:1; --S:21">We are happy to have you with us again. If you need anything, we are here to help.</p>
+        </div>
+
+        <div class="form-box Register">
+            <h2 class="animation" style="--li:17; --S:0">Register</h2>
+            <form action="#">
+                <div class="input-box animation" style="--li:18; --S:1">
+                    <input type="text"/>
+                    <label for="">Username</label>
+                    <box-icon type='solid' name='user' color="gray"></box-icon>
+                </div>
+
+                <div class="input-box animation" style="--li:19; --S:2">
+                    <input type="email" />
+                    <label for="">Email</label>
+                    <box-icon name='envelope' type='solid' color="gray"></box-icon>
+                </div>
+
+                <div class="input-box animation" style="--li:19; --S:3">
+                    <input type="password"/>
+                    <label for="">Password</label>
+                    <box-icon name='lock-alt' type='solid' color="gray"></box-icon>
+                </div>
+
+                <div class="input-box animation" style="--li:20; --S:4">
+                    <button class="btn" type="submit">Register</button>
+                </div>
+
+                <div class="regi-link animation" style="--li:21; --S:5">
+                    <p style="color:black">Don't have an account? <br/> <a href="#" class="SignInLink">Sign In</a></p>
+                </div>
+            </form>
+        </div>
+
+        <div class="info-content Register">
+            <h2 class="animation" style="--li:17; --S:0">WELCOME!</h2>
+            <p class="animation" style="--li:18; --S:1">We’re delighted to have you here. If you need any assistance, feel free to reach out.</p>
+        </div>
+
+    </div>
+
+    <script src="index.js"></script>
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+
+
+    </body>
+       </html>
+             <script src="script.js"></script>
+    </body>
 </html>
