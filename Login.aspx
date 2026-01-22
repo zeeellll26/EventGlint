@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Login & Signup Form</title>
     <link rel="stylesheet" href="Login.css"/>
-
+    
 </head>
 <body>
 
@@ -85,9 +85,7 @@
     <script src="index.js"></script>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
 
-
+    <script  src="./script.js"></script>
     </body>
-       </html>
-             <script src="script.js"></script>
-    </body>
-</html>
+    </html>
+             
