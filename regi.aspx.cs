@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -10,23 +9,16 @@ using System.Web.UI.WebControls;
 
 namespace EventGlint
 {
-    public partial class Login : System.Web.UI.Page
+    public partial class regi : System.Web.UI.Page
     {
         String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
-        
         protected void Page_Load(object sender, EventArgs e)
-        {
-            
-        }
-
-        protected void btn_Login_Click(object sender, EventArgs e)
         {
 
         }
 
         protected void btn_register_Click(object sender, EventArgs e)
         {
-            
             string email = txt_email.Text;
             string user = txt_user.Text;
             string password = txt_pass.Text;
@@ -34,9 +26,9 @@ namespace EventGlint
             SqlConnection conn = new SqlConnection(strcon);
 
             string ins = "INSERT INTO UserLogin(email,username,password) VALUES(@email,@user,@password)";
-            
+
             SqlCommand cmd = new SqlCommand(ins, conn);
-            
+
             cmd.Parameters.AddWithValue("@email", email);
             cmd.Parameters.AddWithValue("@user", user);
             cmd.Parameters.AddWithValue("@password", password);
