@@ -15,39 +15,39 @@ namespace EventGlint
         protected void Page_Load(object sender, EventArgs e)
         {
             // Check if user is logged in
-            if (Session["UserEmail"] == null)
+            if (Session["username"] == null)
             {
-                Response.Redirect("Login.aspx");
+                Response.Redirect("Log.aspx");
                 return;
             }
 
             if (!IsPostBack)
             {
-                LoadUserInfo();
+                //LoadUserInfo();
             }
         }
 
-        void LoadUserInfo()
-        {
-            string email = Session["UserEmail"].ToString();
+        //void LoadUserInfo()
+        //{
+        //    string user = Session["username"].ToString();
 
-            using (SqlConnection conn = new SqlConnection(strcon))
-            {
-                conn.Open();
-                string sql = "SELECT email FROM UserLogin WHERE email = @email";
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@email", email);
-                    string mail = cmd.ExecuteScalar()?.ToString() ?? "User";
-                    lblUserName.Text = $"Hi, {mail}!";
-                }
-            }
-        }
+        //    using (SqlConnection conn = new SqlConnection(strcon))
+        //    {
+        //        conn.Open();
+        //        string sql = "SELECT username FROM UserLogin WHERE username = @user";
+        //        using (SqlCommand cmd = new SqlCommand(sql, conn))
+        //        {
+        //            cmd.Parameters.AddWithValue("@", user);
+        //            string username = cmd.ExecuteScalar()?.ToString() ?? "User";
+        //            lblUserName.Text = $"Hi, {username}!";
+        //        }
+        //    }
+        //}
 
         protected void btnLogout_Click(object sender, EventArgs e)
         {
             Session.Clear();
-            Response.Redirect("Login.aspx");
+            Response.Redirect("Log.aspx");
         }
     }
 }
