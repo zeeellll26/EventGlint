@@ -121,9 +121,11 @@
     <Content Include="des.css" />
     <Content Include="favicon.ico" />
     <Content Include="Log.aspx" />
+    <Content Include="Log.css" />
     <Content Include="Login.aspx" />
     <Content Include="Login.css" />
     <Content Include="reg.aspx" />
+    <Content Include="reg.css" />
     <Content Include="regi.aspx" />
     <Content Include="regi.css" />
     <Content Include="script.js" />

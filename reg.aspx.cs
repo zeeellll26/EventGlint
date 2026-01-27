@@ -25,19 +25,25 @@ namespace EventGlint
             string password = txt_Password.Text;
 
             SqlConnection conn = new SqlConnection(strcon);
+            if(user.Equals("") || email.Equals("") || password.Equals(""))
+            {
+                Response.Write("<script>alert('Please fill all the fields!!');</script>");
+            }
+            else
+            {
+                string ins = "INSERT INTO UserLogin(email,username,password) VALUES(@email,@user,@password)";
 
-            string ins = "INSERT INTO UserLogin(email,username,password) VALUES(@email,@user,@password)";
+                SqlCommand cmd = new SqlCommand(ins, conn);
 
-            SqlCommand cmd = new SqlCommand(ins, conn);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@user", user);
+                cmd.Parameters.AddWithValue("@password", password);
 
-            cmd.Parameters.AddWithValue("@email", email);
-            cmd.Parameters.AddWithValue("@user", user);
-            cmd.Parameters.AddWithValue("@password", password);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("<script>alert('You are registered successfully!!!');</script>");
-            conn.Close();
+                conn.Open();
+                cmd.ExecuteNonQuery();
+                Response.Write("<script>alert('You are registered successfully!!!');</script>");
+                conn.Close();
+            }
         }
     }
 }

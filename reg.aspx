@@ -4,7 +4,7 @@
 <html>
 <head runat="server">
     <title>Register</title>
-    <link href=".css" rel="stylesheet" />
+    <link href="reg.css" rel="stylesheet" />
 </head>
 <body>
     <form id="form1" runat="server">
@@ -40,7 +40,7 @@
                         Text="Register" CssClass="btn-login" OnClick="btn_Register_Click" />
 
                     <p class="signup-text">
-                        Don't have an account?
+                        Already have an account?
                         <asp:LinkButton ID="lnkSignin" runat="server" PostBackUrl="~/Log.aspx">Sign In</asp:LinkButton>
                     </p>
                 </div>
