@@ -18,7 +18,6 @@ namespace EventGlint
             if (Session["username"] == null)
             {
                 Response.Redirect("Log.aspx");
-                return;
             }
 
             if (!IsPostBack)
