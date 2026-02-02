@@ -24,7 +24,7 @@
 
                 <!-- RIGHT PANEL -->
                 <div class="register-right">
-                    <h2>Register</h2>
+                    <h2>REGISTER</h2>
 
                     <asp:TextBox ID="txt_Username" runat="server"
                         CssClass="input-box" Placeholder="Username"></asp:TextBox>
