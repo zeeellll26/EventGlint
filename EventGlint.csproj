@@ -122,11 +122,9 @@
     <Content Include="favicon.ico" />
     <Content Include="Log.aspx" />
     <Content Include="Log.css" />
-    <Content Include="Login.aspx" />
     <Content Include="Login.css" />
     <Content Include="reg.aspx" />
     <Content Include="reg.css" />
-    <Content Include="regi.aspx" />
     <Content Include="regi.css" />
     <Content Include="script.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -214,13 +212,6 @@
     <Compile Include="Log.aspx.designer.cs">
       <DependentUpon>Log.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Login.aspx.cs">
-      <DependentUpon>Login.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Login.aspx.designer.cs">
-      <DependentUpon>Login.aspx</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="reg.aspx.cs">
       <DependentUpon>reg.aspx</DependentUpon>
@@ -228,13 +219,6 @@
     </Compile>
     <Compile Include="reg.aspx.designer.cs">
       <DependentUpon>reg.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="regi.aspx.cs">
-      <DependentUpon>regi.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="regi.aspx.designer.cs">
-      <DependentUpon>regi.aspx</DependentUpon>
     </Compile>
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
