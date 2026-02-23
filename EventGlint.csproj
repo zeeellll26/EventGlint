@@ -122,10 +122,8 @@
     <Content Include="favicon.ico" />
     <Content Include="Log.aspx" />
     <Content Include="Log.css" />
-    <Content Include="Login.css" />
     <Content Include="reg.aspx" />
     <Content Include="reg.css" />
-    <Content Include="regi.css" />
     <Content Include="script.js" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
