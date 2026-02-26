@@ -42,6 +42,7 @@ namespace EventGlint
                 conn.Open();
                 cmd.ExecuteNonQuery();
                 Response.Write("<script>alert('You are registered successfully!!!');</script>");
+                //Response.Redirect("Dashboard.aspx");
                 conn.Close();
             }
         }
