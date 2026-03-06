@@ -99,6 +99,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Admin\EditAdmins.aspx" />
+    <Content Include="Admin\EditBookedSeats.aspx" />
+    <Content Include="Admin\EditBookings.aspx" />
+    <Content Include="Admin\EditCities.aspx" />
+    <Content Include="Admin\EditCoupons.aspx" />
+    <Content Include="Admin\EditEvents.aspx" />
+    <Content Include="Admin\EditHalls.aspx" />
+    <Content Include="Admin\EditPayments.aspx" />
+    <Content Include="Admin\EditReviews.aspx" />
+    <Content Include="Admin\EditSeats.aspx" />
+    <Content Include="Admin\EditShows.aspx" />
+    <Content Include="Admin\EditUsers.aspx" />
+    <Content Include="Admin\EditVenue.aspx" />
+    <Content Include="Admin\EditSeatCategories.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-grid.rtl.css" />
@@ -187,6 +201,104 @@
     <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin\EditAdmins.aspx.cs">
+      <DependentUpon>EditAdmins.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditAdmins.aspx.designer.cs">
+      <DependentUpon>EditAdmins.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditBookedSeats.aspx.cs">
+      <DependentUpon>EditBookedSeats.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditBookedSeats.aspx.designer.cs">
+      <DependentUpon>EditBookedSeats.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditBookings.aspx.cs">
+      <DependentUpon>EditBookings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditBookings.aspx.designer.cs">
+      <DependentUpon>EditBookings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditCities.aspx.cs">
+      <DependentUpon>EditCities.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditCities.aspx.designer.cs">
+      <DependentUpon>EditCities.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditCoupons.aspx.cs">
+      <DependentUpon>EditCoupons.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditCoupons.aspx.designer.cs">
+      <DependentUpon>EditCoupons.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditEvents.aspx.cs">
+      <DependentUpon>EditEvents.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditEvents.aspx.designer.cs">
+      <DependentUpon>EditEvents.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditHalls.aspx.cs">
+      <DependentUpon>EditHalls.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditHalls.aspx.designer.cs">
+      <DependentUpon>EditHalls.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditPayments.aspx.cs">
+      <DependentUpon>EditPayments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditPayments.aspx.designer.cs">
+      <DependentUpon>EditPayments.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditReviews.aspx.cs">
+      <DependentUpon>EditReviews.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditReviews.aspx.designer.cs">
+      <DependentUpon>EditReviews.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditSeats.aspx.cs">
+      <DependentUpon>EditSeats.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditSeats.aspx.designer.cs">
+      <DependentUpon>EditSeats.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditShows.aspx.cs">
+      <DependentUpon>EditShows.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditShows.aspx.designer.cs">
+      <DependentUpon>EditShows.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditUsers.aspx.cs">
+      <DependentUpon>EditUsers.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditUsers.aspx.designer.cs">
+      <DependentUpon>EditUsers.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditVenue.aspx.cs">
+      <DependentUpon>EditVenue.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditVenue.aspx.designer.cs">
+      <DependentUpon>EditVenue.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Admin\EditSeatCategories.aspx.cs">
+      <DependentUpon>EditSeatCategories.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin\EditSeatCategories.aspx.designer.cs">
+      <DependentUpon>EditSeatCategories.aspx</DependentUpon>
+    </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Dashboard.aspx.cs">

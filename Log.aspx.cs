@@ -26,7 +26,7 @@ namespace EventGlint
 
             using (SqlConnection conn = new SqlConnection(strcon))
             {
-                string qry = "SELECT COUNT(*) FROM UserLogin WHERE username=@user AND password=@password";
+                string qry = "SELECT COUNT(*) FROM Users WHERE Username=@user AND Password=@password";
 
                 SqlCommand cmd = new SqlCommand(qry, conn);
 

@@ -31,7 +31,7 @@ namespace EventGlint
             }
             else
             {
-                string ins = "INSERT INTO UserLogin(email,username,password) VALUES(@email,@user,@password)";
+                string ins = "INSERT INTO Users(Username,Email,Password) VALUES(@user,@email,@password)";
 
                 SqlCommand cmd = new SqlCommand(ins, conn);
 
