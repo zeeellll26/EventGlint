@@ -4,22 +4,81 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .form-container {
+            width: 400px;
+            margin: 60px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+            .input:focus {
+                border-color: #5f5d5b;
+                outline: none;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 10px;
+        }
+
+        .button {
+            padding: 8px 18px;
+            border: 1px;
+            border-radius: 5px;
+            background-color: darkslateblue;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+            .button:hover {
+                background-color: white;
+                color: darkslateblue;
+                border: 1px solid darkslateblue;
+            }
+
+        h1 {
+            text-align: center;
+            color: darkslateblue;
+            margin-bottom: 20px;
+        }
+    </style>
+
     <title>Edit Admins</title>
-    <h1 align="center" style="color: darkslateblue">Edit Admins</h1>
+
 </head>
 <body>
-    <br />
-    <br />
-    <br />
+
     <form id="form1" runat="server">
-        <div>
+        <div class="form-container">
+            <h1>Edit Admins</h1>
             <table align="center">
                 <tr>
                     <td>
                         <asp:Label ID="lbl_AdminID" runat="server" Text="Admin ID:"></asp:Label>
                     </td>
                     <td>
-                        <asp:TextBox ID="txt_AdminID" runat="server" ReadOnly></asp:TextBox>
+                        <asp:TextBox CssClass="input" ID="txt_AdminID" runat="server" ReadOnly="True"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -27,7 +86,7 @@
                         <asp:Label ID="lbl_Username" runat="server" Text="Username:"></asp:Label>
                     </td>
                     <td>
-                        <asp:TextBox ID="txt_Username" runat="server"></asp:TextBox>
+                        <asp:TextBox CssClass="input" ID="txt_Username" runat="server"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -35,7 +94,7 @@
                         <asp:Label ID="lbl_Email" runat="server" Text="Email:"></asp:Label>
                     </td>
                     <td>
-                        <asp:TextBox ID="txt_Email" runat="server"></asp:TextBox>
+                        <asp:TextBox CssClass="input" ID="txt_Email" runat="server"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -43,7 +102,7 @@
                         <asp:Label ID="lbl_Password" runat="server" Text="Password:"></asp:Label>
                     </td>
                     <td>
-                        <asp:TextBox ID="txt_Password" runat="server"></asp:TextBox>
+                        <asp:TextBox CssClass="input" ID="txt_Password" runat="server"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -51,7 +110,7 @@
                         <asp:Label ID="lbl_Role" runat="server" Text="Role:"></asp:Label>
                     </td>
                     <td>
-                        <asp:TextBox ID="txt_Role" runat="server"></asp:TextBox>
+                        <asp:TextBox CssClass="input" ID="txt_Role" runat="server"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -59,35 +118,29 @@
                         <asp:Label ID="lbl_CreatedAt" runat="server" Text="Created At:"></asp:Label>
                     </td>
                     <td>
-                        <asp:TextBox ID="txt_CreatedAt" runat="server" ReadOnly="True"></asp:TextBox>
+                        <asp:TextBox CssClass="input" ID="txt_CreatedAt" runat="server" ReadOnly="True"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" align="center">
-                        <asp:Button ID="btn_Insert" runat="server" Text="Insert" OnClick="btn_Insert_Click" />
-                        <asp:Button ID="btn_Save" runat="server" Text="Save" OnClick="btn_Save_Click" />
+                        <asp:Button CssClass="button" ID="btn_Insert" runat="server" Text="Insert" OnClick="btn_Insert_Click" />
+                        <asp:Button CssClass="button" ID="btn_Save" runat="server" Text="Save" OnClick="btn_Save_Click" />
                     </td>
                 </tr>
             </table>
         </div>
-        <br />
-        <br />
-        <br />
-        
-        <div>
-            <asp:GridView ID="gv_Admins" runat="server" align="center" CellPadding="3" GridLines="Horizontal" AutoGenerateDeleteButton="True" AutoGenerateSelectButton="True" HorizontalAlign="Center" OnRowDeleting="gv_Admins_RowDeleting" OnSelectedIndexChanged="gv_Admins_SelectedIndexChanged" BackColor="White" BorderColor="#E7E7FF" BorderStyle="None" BorderWidth="1px">
-                <AlternatingRowStyle BackColor="#F7F7F7" />
-                <FooterStyle BackColor="#B5C7DE" ForeColor="#4A3C8C" />
-                <HeaderStyle BackColor="#4A3C8C" Font-Bold="True" ForeColor="#F7F7F7" />
-                <PagerStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" HorizontalAlign="Right" />
-                <RowStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" />
-                <SelectedRowStyle BackColor="#738A9C" Font-Bold="True" ForeColor="#F7F7F7" />
-                <SortedAscendingCellStyle BackColor="#F4F4FD" />
-                <SortedAscendingHeaderStyle BackColor="#5A4C9D" />
-                <SortedDescendingCellStyle BackColor="#D8D8F0" />
-                <SortedDescendingHeaderStyle BackColor="#3E3277" />
-            </asp:GridView>
-        </div>
+        <asp:GridView ID="gv_Admins" runat="server" Style="text-align: center;margin-bottom:10%" align="center" CellPadding="3" GridLines="Horizontal" AutoGenerateDeleteButton="True" AutoGenerateSelectButton="True" HorizontalAlign="Center" OnRowDeleting="gv_Admins_RowDeleting" OnSelectedIndexChanged="gv_Admins_SelectedIndexChanged" BackColor="White" BorderColor="#E7E7FF" BorderStyle="None" BorderWidth="1px" CellSpacing="2" Width="70%">
+            <AlternatingRowStyle BackColor="#F7F7F7" />
+            <FooterStyle BackColor="#B5C7DE" ForeColor="#4A3C8C" />
+            <HeaderStyle BackColor="#4A3C8C" Font-Bold="True" ForeColor="#F7F7F7" />
+            <PagerStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" HorizontalAlign="Right" />
+            <RowStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" />
+            <SelectedRowStyle BackColor="#738A9C" Font-Bold="True" ForeColor="#F7F7F7" />
+            <SortedAscendingCellStyle BackColor="#F4F4FD" />
+            <SortedAscendingHeaderStyle BackColor="#5A4C9D" />
+            <SortedDescendingCellStyle BackColor="#D8D8F0" />
+            <SortedDescendingHeaderStyle BackColor="#3E3277" />
+        </asp:GridView>
     </form>
 </body>
 </html>

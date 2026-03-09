@@ -24,28 +24,36 @@ namespace EventGlint
             string user = txt_Username.Text;
             string password = txt_Password.Text;
 
-            using (SqlConnection conn = new SqlConnection(strcon))
+            using (SqlConnection con = new SqlConnection(strcon))
             {
+                //Check User Table
                 string qry = "SELECT COUNT(*) FROM Users WHERE Username=@user AND Password=@password";
-
-                SqlCommand cmd = new SqlCommand(qry, conn);
-
+                SqlCommand cmd = new SqlCommand(qry, con);
                 cmd.Parameters.AddWithValue("@user", user);
                 cmd.Parameters.AddWithValue ("@password", password);
-
-                conn.Open();
-                int count = Convert.ToInt32(cmd.ExecuteScalar());
-
-                if(count == 1)
+                con.Open();
+                int countUser = Convert.ToInt32(cmd.ExecuteScalar());
+                if(countUser == 1)
                 {
-                    Session["username"] = user;
-                    Response.Redirect("Dashboard.aspx");
+                    Session["Username"] = user;
+                    Response.Redirect("Home.aspx");
+                    return;
                 }
-                else
+
+                //Check Admin Table
+                string qry2 = "SELECT COUNT(*) FROM Admins WHERE Username=@user AND Password=@password";
+                SqlCommand cmd2 = new SqlCommand(qry2, con);
+                cmd2.Parameters.AddWithValue("@user", user);
+                cmd2.Parameters.AddWithValue("@password", password);
+                int countAdmin = Convert.ToInt32(cmd2.ExecuteScalar());
+                if(countAdmin == 1)
                 {
-                    lbl_Message.Text = "invalid username or password";
-                    lbl_Message.ForeColor = System.Drawing.Color.Red;
+                    Session["Username"] = user;
+                    Response.Redirect("AdminPanel.aspx");
+                    return;
                 }
+                lbl_Message.Text = "Invalid username or password.";
+                con.Close();
             }
         }
     }

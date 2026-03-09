@@ -11,7 +11,7 @@ namespace EventGlint
 {
 
 
-    public partial class des
+    public partial class Home
     {
 
         /// <summary>
@@ -24,48 +24,30 @@ namespace EventGlint
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// userlb control.
+        /// lbl_Username control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label userlb;
+        protected global::System.Web.UI.WebControls.Label lbl_Username;
 
         /// <summary>
-        /// usertxt control.
+        /// lbl_WelcomeName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox usertxt;
+        protected global::System.Web.UI.WebControls.Label lbl_WelcomeName;
 
         /// <summary>
-        /// passlb control.
+        /// lbl_City control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label passlb;
-
-        /// <summary>
-        /// passtxt control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox passtxt;
-
-        /// <summary>
-        /// logbtn control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button logbtn;
+        protected global::System.Web.UI.WebControls.Label lbl_City;
     }
 }

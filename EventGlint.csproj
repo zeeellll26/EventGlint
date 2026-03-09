@@ -99,6 +99,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AdminPanel.aspx" />
     <Content Include="Admin\EditAdmins.aspx" />
     <Content Include="Admin\EditBookedSeats.aspx" />
     <Content Include="Admin\EditBookings.aspx" />
@@ -131,9 +132,8 @@
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Dashboard.aspx" />
-    <Content Include="des.aspx" />
-    <Content Include="des.css" />
     <Content Include="favicon.ico" />
+    <Content Include="Home.aspx" />
     <Content Include="Log.aspx" />
     <Content Include="Log.css" />
     <Content Include="reg.aspx" />
@@ -201,6 +201,13 @@
     <Content Include="Site.Mobile.Master" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdminPanel.aspx.cs">
+      <DependentUpon>AdminPanel.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminPanel.aspx.designer.cs">
+      <DependentUpon>AdminPanel.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Admin\EditAdmins.aspx.cs">
       <DependentUpon>EditAdmins.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -308,12 +315,12 @@
     <Compile Include="Dashboard.aspx.designer.cs">
       <DependentUpon>Dashboard.aspx</DependentUpon>
     </Compile>
-    <Compile Include="des.aspx.cs">
-      <DependentUpon>des.aspx</DependentUpon>
+    <Compile Include="Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="des.aspx.designer.cs">
-      <DependentUpon>des.aspx</DependentUpon>
+    <Compile Include="Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
     </Compile>
     <Compile Include="Log.aspx.cs">
       <DependentUpon>Log.aspx</DependentUpon>

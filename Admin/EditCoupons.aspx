@@ -4,109 +4,192 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title></title>
+    <title>Coupon Form</title>
+
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    }
+
+    .form-container {
+        width: 500px;
+        margin: 60px auto;
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .input {
+        width: 100%;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    .input:focus {
+        border-color: #5f5d5b;
+        outline: none;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    td {
+        padding: 10px;
+    }
+
+    .button {
+        padding: 8px 18px;
+        border: 1px;
+        border-radius: 5px;
+        background-color: darkslateblue;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .button:hover {
+        background-color: white;
+        color: darkslateblue;
+        border: 1px solid darkslateblue;
+    }
+
+    h2 {
+        text-align: center;
+        color: darkslateblue;
+        margin-bottom: 20px;
+    }
+</style>
+
 </head>
+
 <body>
+
+    <div class="form-container">
+
     <form id="form1" runat="server">
-        <div>
 
-            <center>
-            <h1 style="color:darkslateblue">Coupon Form</h1>
+        <h2>Coupon Form</h2>
 
-            <table border="1" cellpadding="8" style="width:500px">
+        <table>
 
-            <tr>
-                <td>Coupon Code</td>
-                <td>
-                    <asp:TextBox ID="txtCode" runat="server"></asp:TextBox>
-                    <asp:RequiredFieldValidator ID="rfvCode" runat="server"
-                    ControlToValidate="txtCode"
-                    ErrorMessage="Required" ForeColor="Red"></asp:RequiredFieldValidator>
-                </td>
-            </tr>
+        <tr>
+        <td>Coupon Code</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtCode" runat="server"></asp:TextBox>
+        <asp:RequiredFieldValidator 
+        ID="rfvCode" 
+        runat="server"
+        ControlToValidate="txtCode"
+        ErrorMessage="Required"
+        ForeColor="Red">
+        </asp:RequiredFieldValidator>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Discount Type</td>
-                <td>
-                    <asp:RadioButtonList ID="rblDiscountType" runat="server">
-                        <asp:ListItem Text="Percentage" Value="Percentage"></asp:ListItem>
-                        <asp:ListItem Text="Flat" Value="Flat"></asp:ListItem>
-                    </asp:RadioButtonList>
-                </td>
-            </tr>
+        <tr>
+        <td>Discount Type</td>
+        <td>
+        <asp:RadioButtonList ID="rblDiscountType" runat="server">
+        <asp:ListItem Text="Percentage" Value="Percentage"></asp:ListItem>
+        <asp:ListItem Text="Flat" Value="Flat"></asp:ListItem>
+        </asp:RadioButtonList>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Discount Value</td>
-                <td>
-                    <asp:TextBox ID="txtDiscountValue" runat="server"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Discount Value</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtDiscountValue" runat="server"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Max Discount</td>
-                <td>
-                    <asp:TextBox ID="txtMaxDiscount" runat="server"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Max Discount</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtMaxDiscount" runat="server"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Min Order Value</td>
-                <td>
-                    <asp:TextBox ID="txtMinOrderValue" runat="server"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Min Order Value</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtMinOrderValue" runat="server"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Valid From</td>
-                <td>
-                    <asp:TextBox ID="txtValidFrom" runat="server" TextMode="Date"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Valid From</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtValidFrom" runat="server" TextMode="Date"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Valid Till</td>
-                <td>
-                    <asp:TextBox ID="txtValidTill" runat="server" TextMode="Date"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Valid Till</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtValidTill" runat="server" TextMode="Date"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Usage Limit</td>
-                <td>
-                    <asp:TextBox ID="txtUsageLimit" runat="server"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Usage Limit</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtUsageLimit" runat="server"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Used Count</td>
-                <td>
-                    <asp:TextBox ID="txtUsedCount" runat="server"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Used Count</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtUsedCount" runat="server"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Created At</td>
-                <td>
-                    <asp:TextBox ID="txtCreatedAt" runat="server" TextMode="DateTime"></asp:TextBox>
-                </td>
-            </tr>
+        <tr>
+        <td>Created At</td>
+        <td>
+        <asp:TextBox CssClass="input" ID="txtCreatedAt" runat="server" TextMode="Date"></asp:TextBox>
+        </td>
+        </tr>
 
-            <tr>
-                <td>Active Coupon</td>
-                <td>
-                    <asp:CheckBox ID="chkActive" runat="server" Text="Active"></asp:CheckBox>
-                </td>
-            </tr>
+        <tr>
+        <td colspan="2" align="center">
+        <asp:Button CssClass="button" ID="btnSave" runat="server" Text="Save Coupon" OnClick="btnSave_Click" />
+        <asp:Button CssClass="button" ID="btnUpdate" runat="server" Text="Update" OnClick="btnUpdate_Click" />
+        </td>
+        </tr>
 
-            <tr>
-                <td colspan="2" align="center">
-                    <asp:Button ID="btnSave" runat="server" Text="Save Coupon" />
-                </td>
-            </tr>
+        </table>
 
-            </table>
-            </center>
+         <div style="margin-top: 10%">
+        <asp:GridView ID="GridView1" runat="server" Style="text-align: center" align="center" AutoGenerateDeleteButton="True" AutoGenerateSelectButton="True" BackColor="White" BorderColor="#E7E7FF" BorderStyle="None" BorderWidth="1px" CellPadding="3" GridLines="Horizontal" CellSpacing="2" HorizotalAlign="Center"  OnSelectedIndexChanged="GridView1_SelectedIndexChanged"
+ OnRowDeleting="GridView1_RowDeleting">
+        <AlternatingRowStyle BackColor="#F7F7F7" />
+        <FooterStyle BackColor="#B5C7DE" ForeColor="#4A3C8C" />
+        <HeaderStyle BackColor="#4A3C8C" Font-Bold="True" ForeColor="#F7F7F7" />
+        <PagerStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" HorizontalAlign="Right" />
+        <RowStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" />
+        <SelectedRowStyle BackColor="#738A9C" Font-Bold="True" ForeColor="#F7F7F7" />
+        <SortedAscendingCellStyle BackColor="#F4F4FD" />
+        <SortedAscendingHeaderStyle BackColor="#5A4C9D" />
+        <SortedDescendingCellStyle BackColor="#D8D8F0" />
+        <SortedDescendingHeaderStyle BackColor="#3E3277" />
+        </asp:GridView>
+
         </div>
-    </form>
+
+
+     </form>
+                 
+
+    </div>
+
 </body>
 </html>
+
