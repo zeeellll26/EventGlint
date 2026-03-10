@@ -17,7 +17,7 @@
                 <div class="login-left">
                     <h2>Login</h2>
 
-                    <asp:Label ID="lbl_Message" runat="server" CssClass="lbl_msg"></asp:Label>
+                    <asp:Label ID="lbl_Message" runat="server" CssClass="lbl_msg" ForeColor="Red"></asp:Label>
 
 
                     <asp:TextBox ID="txt_Username" runat="server" CssClass="input-box"
