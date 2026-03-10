@@ -87,7 +87,7 @@ namespace EventGlint.Admin
 
 
         // GRIDVIEW SELECT
-        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+        protected void GridView11_SelectedIndexChanged(object sender, EventArgs e)
         {
             txtBookingId.Text = GridView11.SelectedRow.Cells[1].Text;
             txtUserId.Text = GridView11.SelectedRow.Cells[2].Text;
@@ -127,7 +127,7 @@ namespace EventGlint.Admin
         }
 
         // DELETE
-        protected void GridView1_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        protected void GridView11_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             int id = Convert.ToInt32(GridView11.DataKeys[e.RowIndex].Value);
 

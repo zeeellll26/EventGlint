@@ -89,6 +89,8 @@
                     <td>
                         <asp:RadioButton ID="rbt_silver" runat="server" GroupName="cat" Text="Silver" />
                         
+                        <br />
+                        
                         <asp:RadioButton ID="rbt_gold" runat="server" GroupName="cat" Text="Gold" />
                         <br />
                         <asp:RadioButton ID="rbt_platinum" runat="server" GroupName="cat" Text="Platinum" />
