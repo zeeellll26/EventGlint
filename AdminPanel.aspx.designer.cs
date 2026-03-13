@@ -24,6 +24,15 @@ namespace EventGlint
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
+        /// lbl_AvatarInitial control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lbl_AvatarInitial;
+
+        /// <summary>
         /// lbl_AdminName control.
         /// </summary>
         /// <remarks>
@@ -33,12 +42,39 @@ namespace EventGlint
         protected global::System.Web.UI.WebControls.Label lbl_AdminName;
 
         /// <summary>
-        /// lbl_Role control.
+        /// lbl_TotalEvents control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_Role;
+        protected global::System.Web.UI.WebControls.Label lbl_TotalEvents;
+
+        /// <summary>
+        /// lbl_TotalBookings control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lbl_TotalBookings;
+
+        /// <summary>
+        /// lbl_TotalUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lbl_TotalUsers;
+
+        /// <summary>
+        /// lbl_TotalRevenue control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lbl_TotalRevenue;
     }
 }
