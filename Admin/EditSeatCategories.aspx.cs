@@ -41,14 +41,14 @@ namespace EventGlint.Admin
             }
             SqlConnection con = new SqlConnection(strcon);
 
-            string qry = "INSERT INTO SeatCategories(HallId,Name,Price,ColorCode) VALUES(@id,@name,@price,@color)";
+            string qry = "INSERT INTO SeatCategories(HallId,Name,Price) VALUES(@id,@name,@price)";
 
             SqlCommand cmd = new SqlCommand(qry, con);
 
             cmd.Parameters.AddWithValue("@id", ddl_Hall.SelectedValue);
             cmd.Parameters.AddWithValue("@name", selectedtype);
             cmd.Parameters.AddWithValue("@price", txt_price.Text);
-            cmd.Parameters.AddWithValue("@color", txt_color.Text);
+            
 
             con.Open();
             cmd.ExecuteNonQuery();
@@ -76,7 +76,7 @@ namespace EventGlint.Admin
             }
             SqlConnection con = new SqlConnection(strcon);
 
-            string qry = "UPDATE SeatCategories SET HallId=@id, Name=@name, Price=@price, ColorCode=@color WHERE CategoryId=@c_id";
+            string qry = "UPDATE SeatCategories SET HallId=@id, Name=@name, Price=@price WHERE CategoryId=@c_id";
 
             SqlCommand cmd = new SqlCommand(qry, con);
 
@@ -86,7 +86,6 @@ namespace EventGlint.Admin
             cmd.Parameters.AddWithValue("@id", ddl_Hall.SelectedValue);
             cmd.Parameters.AddWithValue("@name", selectedtype);
             cmd.Parameters.AddWithValue("@price", txt_price.Text);
-            cmd.Parameters.AddWithValue("@color", txt_color.Text);
 
             con.Open();
             cmd.ExecuteNonQuery();
@@ -103,8 +102,7 @@ namespace EventGlint.Admin
                sc.HallId,
                h.Name AS HallName,
                sc.Name AS SeatCategory,
-               sc.Price,
-               sc.ColorCode
+               sc.Price 
         FROM SeatCategories sc
         INNER JOIN Halls h ON sc.HallId = h.HallId";
 
@@ -131,7 +129,6 @@ namespace EventGlint.Admin
             else if (cat == "Platinum") rbt_platinum.Checked = true;
 
             txt_price.Text = row.Cells[5].Text;
-            txt_color.Text = row.Cells[6].Text;
         }
         protected void gv_Category_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {

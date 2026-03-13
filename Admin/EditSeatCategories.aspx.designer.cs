@@ -96,24 +96,6 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.WebControls.TextBox txt_price;
 
         /// <summary>
-        /// lbl_color control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_color;
-
-        /// <summary>
-        /// txt_color control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_color;
-
-        /// <summary>
         /// btn_Insert control.
         /// </summary>
         /// <remarks>
