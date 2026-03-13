@@ -106,14 +106,7 @@
 
                     </td>
                 </tr>
-                <tr>
-                    <td>
-                        <asp:Label ID="lbl_color" runat="server" Text="Color Code:"></asp:Label>
-                    </td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txt_color" runat="server"></asp:TextBox>
-                    </td>
-                </tr>
+               
 
                 <tr>
                     <td colspan="2" align="center">
