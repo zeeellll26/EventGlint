@@ -55,7 +55,7 @@ namespace EventGlint.Admin
             }
 
             LoadPayments();
-            ClearForm();
+           
             ClientScript.RegisterStartupScript(this.GetType(), "msg", "alert('Inserted successfully!');", true);
         }
 
@@ -125,11 +125,11 @@ namespace EventGlint.Admin
             }
             finally
             {
-                con.Close();  // ✅ Fixed: now always closes
+                con.Close();  
             }
 
             LoadPayments();
-            ClearForm();
+      
             ClientScript.RegisterStartupScript(this.GetType(), "msg", "alert('Updated successfully!');", true);
         }
 
@@ -147,24 +147,13 @@ namespace EventGlint.Admin
             }
             finally
             {
-                con.Close();  // ✅ Fixed: now always closes
+                con.Close();  
             }
 
             LoadPayments();
             ClientScript.RegisterStartupScript(this.GetType(), "msg", "alert('Deleted successfully!');", true);
         }
 
-        // CLEAR FORM
-        void ClearForm()
-        {
-            txtBooking.Text = "";
-            txtAmount.Text = "";
-            txtPaidAt.Text = "";
-            txtRefundedAt.Text = "";
-            txtRefundAmount.Text = "";
-            rblPaymentMethod.ClearSelection();
-            rbt_gate.ClearSelection();
-            ddlStatus.SelectedIndex = 0;
-        }
+        
     }
 }
