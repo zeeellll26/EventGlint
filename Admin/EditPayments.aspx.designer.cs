@@ -24,31 +24,13 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// txtPaymentId control.
+        /// txtBooking control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPaymentId;
-
-        /// <summary>
-        /// rfvCode control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvCode;
-
-        /// <summary>
-        /// ddlBookingId control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlBookingId;
+        protected global::System.Web.UI.WebControls.TextBox txtBooking;
 
         /// <summary>
         /// txtAmount control.
@@ -69,22 +51,13 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.WebControls.RadioButtonList rblPaymentMethod;
 
         /// <summary>
-        /// ddlGateway control.
+        /// rbt_gate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlGateway;
-
-        /// <summary>
-        /// txtGatewayTxnId control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtGatewayTxnId;
+        protected global::System.Web.UI.WebControls.RadioButtonList rbt_gate;
 
         /// <summary>
         /// ddlStatus control.
