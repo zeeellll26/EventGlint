@@ -1,145 +1,147 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
     public partial class EditUsers : System.Web.UI.Page
     {
-        String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            Bind_Grid();
-            if (!IsPostBack)
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            lbl_AvatarInitial.Text = (Session["Username"]?.ToString() ?? "A")[0].ToString().ToUpper();
+            if (!IsPostBack) { BindCities(); LoadGrid(); }
+        }
+
+        private void BindCities()
+        {
+            try
             {
-                Bind_ddl_City();
-            }
-        }
-
-        protected void Bind_ddl_City()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
-            string qry = "SELECT * FROM Cities";
-
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataTable dt = new DataTable();
-            adpt.Fill(dt);
-
-            ddl_City.DataSource = dt;
-            ddl_City.DataBind();
-            ddl_City.DataTextField = "Name";
-            ddl_City.DataValueField = "CityId";
-            ddl_City.DataBind();
-
-            ddl_City.Items.Insert(0, new ListItem("Select City", "0"));
-            con.Close();
-        }
-
-        protected void Bind_Grid()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "SELECT * FROM Users";
-
-            con.Open();
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataSet ds = new DataSet();
-            adpt.Fill(ds);
-
-            gv_Users.DataSource = ds;
-            gv_Users.DataBind();
-            con.Close();
-        }
-
-        protected void gv_Users_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            GridViewRow row = gv_Users.SelectedRow;
-            txt_UserId.Text = row.Cells[1].Text;
-            txt_Username.Text = row.Cells[2].Text;
-            txt_Email.Text = row.Cells[3].Text;
-            txt_Phone.Text = row.Cells[4].Text;
-            txt_Password.Text = row.Cells[5].Text;
-            txt_ProfilePic.Text = row.Cells[6].Text;
-            txt_DateOfBirth.Text = row.Cells[7].Text;
-
-            for (int i = 0; i < ddl_City.Items.Count; i++)
-            {
-                if (ddl_City.Items[i].Text == row.Cells[8].Text)
+                using (SqlConnection con = new SqlConnection(connStr))
                 {
-                    ddl_City.SelectedIndex = i;
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT CityId, Name + ', ' + State AS Label FROM Cities ORDER BY Name", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    ddlCityId.DataSource = dt; ddlCityId.DataValueField = "CityId"; ddlCityId.DataTextField = "Label"; ddlCityId.DataBind();
+                    ddlCityId.Items.Insert(0, new ListItem("-- Select City --", ""));
                 }
             }
-
-            txt_CreatedAt.Text = row.Cells[9].Text;
+            catch { ddlCityId.Items.Insert(0, new ListItem("-- Error --", "")); }
         }
 
-
-        protected void gv_Users_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        private void LoadGrid()
         {
-            GridViewRow row = gv_Users.Rows[e.RowIndex];
-            int userID = Convert.ToInt32(row.Cells[1].Text);
-
-            string qry = "DELETE FROM Users WHERE UserId = @UserId";
-
-            SqlConnection con = new SqlConnection(strcon);
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@UserId", userID);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            Bind_Grid();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(@"
+                        SELECT u.UserId, u.Username, u.Email, u.Phone,
+                               ISNULL(c.Name, '—') AS CityName, u.CreatedAt
+                        FROM Users u LEFT JOIN Cities c ON c.CityId = u.CityId
+                        ORDER BY u.UserId DESC", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    gvData.DataSource = dt; gvData.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
 
-        protected void btn_Update_Click(object sender, EventArgs e)
+        protected void btnInsert_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "UPDATE Users SET Username = @Username, Email = @Email, Phone = @Phone, Password = @Password, DateOfBirth = @DateOfBirth, CityId = @City WHERE UserId = @UserId";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-            cmd.Parameters.AddWithValue("@UserId", txt_UserId.Text);
-            cmd.Parameters.AddWithValue("@Username", txt_Username.Text);
-            cmd.Parameters.AddWithValue("@Email", txt_Email.Text);
-            cmd.Parameters.AddWithValue("@Phone", txt_Phone.Text);
-            cmd.Parameters.AddWithValue("@Password", txt_Password.Text);
-            //cmd.Parameters.AddWithValue("@ProfilePic", txt_ProfilePic.Text);
-            cmd.Parameters.AddWithValue("@DateOfBirth", txt_DateOfBirth.Text);
-            cmd.Parameters.AddWithValue("@City", ddl_City.SelectedIndex);
-            //cmd.Parameters.AddWithValue("@CreatedAt", txt_CreatedAt.Text);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("User Details Updated..");
-            con.Close();
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"
+                        INSERT INTO Users(Username,Email,Phone,Password,ProfilePic,DateOfBirth,CityId,CreatedAt)
+                        VALUES(@u,@em,@ph,@pw,@pp,@dob,@cid,GETDATE())", con);
+                    SetParams(cmd); con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ User inserted!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
 
-        protected void btn_Insert_Click(object sender, EventArgs e)
+        protected void btnSave_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "INSERT INTO Users(Username,Email,Phone,Password,DateOfBirth,CityId) VALUES(@Username,@Email,@Phone,@Password,@DateOfBirth,@City);";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-            //cmd.Parameters.AddWithValue("@UserId", txt_UserId.Text);
-            cmd.Parameters.AddWithValue("@Username", txt_Username.Text);
-            cmd.Parameters.AddWithValue("@Email", txt_Email.Text);
-            cmd.Parameters.AddWithValue("@Phone", txt_Phone.Text);
-            cmd.Parameters.AddWithValue("@Password", txt_Password.Text);
-            //cmd.Parameters.AddWithValue("@ProfilePic", txt_ProfilePic.Text);
-            cmd.Parameters.AddWithValue("@DateOfBirth", txt_DateOfBirth.Text);
-            cmd.Parameters.AddWithValue("@City", ddl_City.SelectedIndex);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("<script>alert('Record Inserted..');</script>");
-            con.Close();
+            if (string.IsNullOrEmpty(txtUserId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"
+                        UPDATE Users SET Username=@u,Email=@em,Phone=@ph,Password=@pw,
+                        ProfilePic=@pp,DateOfBirth=@dob,CityId=@cid,UpdatedAt=GETDATE()
+                        WHERE UserId=@id", con);
+                    SetParams(cmd); cmd.Parameters.AddWithValue("@id", int.Parse(txtUserId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ User updated!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
+
+        private void SetParams(SqlCommand cmd)
+        {
+            cmd.Parameters.AddWithValue("@u", txtUsername.Text.Trim());
+            cmd.Parameters.AddWithValue("@em", txtEmail.Text.Trim());
+            cmd.Parameters.AddWithValue("@ph", txtPhone.Text.Trim());
+            cmd.Parameters.AddWithValue("@pw", txtPassword.Text.Trim());
+            cmd.Parameters.AddWithValue("@pp", txtProfilePic.Text.Trim());
+            cmd.Parameters.AddWithValue("@dob", string.IsNullOrEmpty(txtDOB.Text) ? (object)DBNull.Value : DateTime.Parse(txtDOB.Text));
+            cmd.Parameters.AddWithValue("@cid", string.IsNullOrEmpty(ddlCityId.SelectedValue) ? (object)DBNull.Value : int.Parse(ddlCityId.SelectedValue));
+        }
+
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+
+        protected void gvData_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Users WHERE UserId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtUserId.Text = r["UserId"].ToString();
+                        txtUsername.Text = r["Username"].ToString();
+                        txtEmail.Text = r["Email"].ToString();
+                        txtPhone.Text = r["Phone"]?.ToString();
+                        txtPassword.Text = r["Password"].ToString();
+                        txtProfilePic.Text = r["ProfilePic"]?.ToString();
+                        if (r["DateOfBirth"] != DBNull.Value) txtDOB.Text = Convert.ToDateTime(r["DateOfBirth"]).ToString("yyyy-MM-dd");
+                        if (r["CityId"] != DBNull.Value) ddlCityId.SelectedValue = r["CityId"].ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                { SqlCommand cmd = new SqlCommand("DELETE FROM Users WHERE UserId=@id", con); cmd.Parameters.AddWithValue("@id", id); con.Open(); cmd.ExecuteNonQuery(); }
+                ShowMessage("🗑️ User deleted!", true); ClearFields(); LoadGrid();
+            }
+        }
+
+        private void ClearFields() { txtUserId.Text = txtUsername.Text = txtEmail.Text = txtPhone.Text = txtPassword.Text = txtProfilePic.Text = txtDOB.Text = ""; ddlCityId.SelectedIndex = 0; }
+        private bool Validate()
+        {
+            if (string.IsNullOrEmpty(txtUsername.Text.Trim())) { ShowMessage("⚠️ Username required.", false); return false; }
+            if (string.IsNullOrEmpty(txtEmail.Text.Trim())) { ShowMessage("⚠️ Email required.", false); return false; }
+            if (string.IsNullOrEmpty(txtPassword.Text.Trim())) { ShowMessage("⚠️ Password required.", false); return false; }
+            return true;
+        }
+        private void ShowMessage(string msg, bool ok) { lblMessage.Text = msg; lblMessage.CssClass = ok ? "alert msg-success" : "alert msg-error"; lblMessage.Visible = true; }
     }
 }

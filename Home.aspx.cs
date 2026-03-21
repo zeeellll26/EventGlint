@@ -40,9 +40,9 @@ namespace EventGlint
                 string name = dt.Rows[0]["Username"].ToString();
                 string city = dt.Rows[0]["Name"].ToString();
 
-                lbl_Username.Text = name;
-                lbl_WelcomeName.Text = name;
-                lbl_City.Text = city;
+                //lbl_Username.Text = name;
+                //lbl_WelcomeName.Text = name;
+                //lbl_City.Text = city;
             }
         }
     }

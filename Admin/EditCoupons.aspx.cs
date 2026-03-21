@@ -1,142 +1,142 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
     public partial class EditCoupons : System.Web.UI.Page
     {
-        string strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
-            {
-                LoadGrid();
-            }
-
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            lbl_AvatarInitial.Text = (Session["Username"]?.ToString() ?? "A")[0].ToString().ToUpper();
+            if (!IsPostBack) LoadGrid();
         }
 
-        void LoadGrid()
+        private void LoadGrid()
         {
-            SqlConnection con = new SqlConnection(strcon);
-            SqlDataAdapter da = new SqlDataAdapter("select * from Coupons", con);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-
-            GridView1.DataSource = dt;
-            GridView1.DataBind();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT CouponId,Code,DiscountType,DiscountValue,ValidFrom,ValidTill,UsedCount FROM Coupons ORDER BY CouponId DESC", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    gvCoupons.DataSource = dt; gvCoupons.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
 
-        // INSERT
+        protected void btnInsert_Click(object sender, EventArgs e)
+        {
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO Coupons(Code,DiscountType,DiscountValue,MaxDiscount,MinOrderValue,ValidFrom,ValidTill,UsageLimit,UsedCount,CreatedAt)
+                        VALUES(@code,@type,@val,@max,@min,@from,@till,@limit,@used,GETDATE())", con);
+                    SetParams(cmd);
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Coupon inserted!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
         protected void btnSave_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string query = "insert into Coupons(Code,DiscountType,DiscountValue,MaxDiscount,MinOrderValue,ValidFrom,ValidTill,UsageLimit,UsedCount,CreatedAt)" +
-                " values(@Code,@Type,@Value,@Max,@Min,@From,@Till,@Limit,@Used,@Created)";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-
-            cmd.Parameters.AddWithValue("@Code", txtCode.Text);
-            cmd.Parameters.AddWithValue("@Type", rblDiscountType.SelectedValue);
-            cmd.Parameters.AddWithValue("@Value", txtDiscountValue.Text);
-            cmd.Parameters.AddWithValue("@Max", txtMaxDiscount.Text);
-            cmd.Parameters.AddWithValue("@Min", txtMinOrderValue.Text);
-            cmd.Parameters.AddWithValue("@From", Convert.ToDateTime(txtValidFrom.Text));
-            cmd.Parameters.AddWithValue("@Till", Convert.ToDateTime(txtValidTill.Text));
-            cmd.Parameters.AddWithValue("@Limit", txtUsageLimit.Text);
-            cmd.Parameters.AddWithValue("@Used", txtUsedCount.Text);
-            cmd.Parameters.AddWithValue("@Created", Convert.ToDateTime(txtCreatedAt.Text));
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("inserted successfully!");
-            con.Close();
-
-            LoadGrid();
+            if (string.IsNullOrEmpty(txtCouponId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Coupons SET Code=@code,DiscountType=@type,DiscountValue=@val,MaxDiscount=@max,
+                        MinOrderValue=@min,ValidFrom=@from,ValidTill=@till,UsageLimit=@limit,UsedCount=@used WHERE CouponId=@id", con);
+                    SetParams(cmd);
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtCouponId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Coupon updated!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
 
-        // SELECT RECORD FROM GRID
-        protected void GridView1_SelectedIndexChanged(object sender, EventArgs e)
+        private void SetParams(SqlCommand cmd)
         {
-            txtCode.Text = GridView1.SelectedRow.Cells[2].Text;
-            rblDiscountType.SelectedValue = GridView1.SelectedRow.Cells[3].Text;
-            txtDiscountValue.Text = GridView1.SelectedRow.Cells[4].Text;
-            txtMaxDiscount.Text = GridView1.SelectedRow.Cells[5].Text;
-            txtMinOrderValue.Text = GridView1.SelectedRow.Cells[6].Text;
-            txtValidFrom.Text = GridView1.SelectedRow.Cells[7].Text;
-            txtValidTill.Text = GridView1.SelectedRow.Cells[8].Text;
-            txtUsageLimit.Text = GridView1.SelectedRow.Cells[9].Text;
-            txtUsedCount.Text = GridView1.SelectedRow.Cells[10].Text;
-            txtCreatedAt.Text = GridView1.SelectedRow.Cells[11].Text;
+            cmd.Parameters.AddWithValue("@code", txtCode.Text.Trim().ToUpper());
+            cmd.Parameters.AddWithValue("@type", rbPercentage.Checked ? "Percentage" : "Flat");
+            cmd.Parameters.AddWithValue("@val", decimal.Parse(txtDiscountValue.Text));
+            cmd.Parameters.AddWithValue("@max", string.IsNullOrEmpty(txtMaxDiscount.Text) ? (object)DBNull.Value : decimal.Parse(txtMaxDiscount.Text));
+            cmd.Parameters.AddWithValue("@min", string.IsNullOrEmpty(txtMinOrder.Text) ? (object)DBNull.Value : decimal.Parse(txtMinOrder.Text));
+            cmd.Parameters.AddWithValue("@from", DateTime.Parse(txtValidFrom.Text));
+            cmd.Parameters.AddWithValue("@till", DateTime.Parse(txtValidTill.Text));
+            cmd.Parameters.AddWithValue("@limit", string.IsNullOrEmpty(txtUsageLimit.Text) ? (object)DBNull.Value : int.Parse(txtUsageLimit.Text));
+            cmd.Parameters.AddWithValue("@used", string.IsNullOrEmpty(txtUsedCount.Text) ? 0 : int.Parse(txtUsedCount.Text));
         }
 
-        // UPDATE
-        protected void btnUpdate_Click(object sender, EventArgs e)
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+
+        protected void gvCoupons_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            int id = Convert.ToInt32(GridView1.SelectedRow.Cells[1].Text);
-
-            string query = "UPDATE Coupons SET Code=@Code, DiscountType=@Type, DiscountValue=@Value, MaxDiscount=@max, MinOrderValue=@Min, ValidFrom=@From, ValidTill=@Till, UsageLimit=@Limit, UsedCount=@Used, CreatedAt=@Created WHERE CouponId=@Id";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-
-            cmd.Parameters.AddWithValue("@Code", txtCode.Text);
-            cmd.Parameters.AddWithValue("@Type", rblDiscountType.SelectedValue);
-            cmd.Parameters.AddWithValue("@Value", txtDiscountValue.Text);
-            cmd.Parameters.AddWithValue("@max", txtMaxDiscount.Text);
-            cmd.Parameters.AddWithValue("@Min", txtMinOrderValue.Text);
-            DateTime fromDate, tillDate, createdDate;
-
-            DateTime.TryParse(txtValidFrom.Text, out fromDate);
-            DateTime.TryParse(txtValidTill.Text, out tillDate);
-            DateTime.TryParse(txtCreatedAt.Text, out createdDate);
-
-            cmd.Parameters.AddWithValue("@From", fromDate);
-            cmd.Parameters.AddWithValue("@Till", tillDate);
-            cmd.Parameters.AddWithValue("@Limit", txtUsageLimit.Text);
-            cmd.Parameters.AddWithValue("@Used", txtUsedCount.Text);
-            cmd.Parameters.AddWithValue("@Created", createdDate);
-            cmd.Parameters.AddWithValue("@Id", id);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            LoadGrid();
-            con.Close();
-
-            Response.Write("Updated Successfully");
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Coupons WHERE CouponId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtCouponId.Text = r["CouponId"].ToString();
+                        txtCode.Text = r["Code"].ToString();
+                        rbPercentage.Checked = r["DiscountType"].ToString() == "Percentage";
+                        rbFlat.Checked = r["DiscountType"].ToString() == "Flat";
+                        txtDiscountValue.Text = r["DiscountValue"].ToString();
+                        txtMaxDiscount.Text = r["MaxDiscount"] == DBNull.Value ? "" : r["MaxDiscount"].ToString();
+                        txtMinOrder.Text = r["MinOrderValue"] == DBNull.Value ? "" : r["MinOrderValue"].ToString();
+                        txtValidFrom.Text = Convert.ToDateTime(r["ValidFrom"]).ToString("yyyy-MM-dd");
+                        txtValidTill.Text = Convert.ToDateTime(r["ValidTill"]).ToString("yyyy-MM-dd");
+                        txtUsageLimit.Text = r["UsageLimit"] == DBNull.Value ? "" : r["UsageLimit"].ToString();
+                        txtUsedCount.Text = r["UsedCount"].ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("DELETE FROM Coupons WHERE CouponId=@id", con);
+                    cmd.Parameters.AddWithValue("@id", id); con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("🗑️ Coupon deleted!", true); ClearFields(); LoadGrid();
+            }
         }
 
-
-        // DELETE
-        protected void GridView1_RowDeleting(object sender, System.Web.UI.WebControls.GridViewDeleteEventArgs e)
+        private void ClearFields()
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            int id = Convert.ToInt32(GridView1.SelectedRow.Cells[1].Text);
-
-            string query = "DELETE FROM Coupons WHERE CouponId=@Id";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-            cmd.Parameters.AddWithValue("@Id", id);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            LoadGrid();
-            con.Close();
-
-            Response.Write("Deleted Successfully");
-
+            txtCouponId.Text = txtCode.Text = txtDiscountValue.Text = txtMaxDiscount.Text =
+            txtMinOrder.Text = txtValidFrom.Text = txtValidTill.Text = txtUsageLimit.Text = txtUsedCount.Text = "";
+            rbPercentage.Checked = false; rbFlat.Checked = false;
         }
+        private bool Validate()
+        {
+            if (string.IsNullOrEmpty(txtCode.Text.Trim())) { ShowMessage("⚠️ Coupon Code required.", false); return false; }
+            if (!rbPercentage.Checked && !rbFlat.Checked) { ShowMessage("⚠️ Select Discount Type.", false); return false; }
+            if (string.IsNullOrEmpty(txtDiscountValue.Text.Trim())) { ShowMessage("⚠️ Discount Value required.", false); return false; }
+            if (string.IsNullOrEmpty(txtValidFrom.Text)) { ShowMessage("⚠️ Valid From required.", false); return false; }
+            if (string.IsNullOrEmpty(txtValidTill.Text)) { ShowMessage("⚠️ Valid Till required.", false); return false; }
+            return true;
+        }
+        private void ShowMessage(string msg, bool ok) { lblMessage.Text = msg; lblMessage.CssClass = ok ? "alert msg-success" : "alert msg-error"; lblMessage.Visible = true; }
     }
 }
-
-
-

@@ -1,245 +1,156 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
     public partial class EditHalls : System.Web.UI.Page
     {
-        String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            lbl_AvatarInitial.Text = (Session["Username"]?.ToString() ?? "A")[0].ToString().ToUpper();
+            if (!IsPostBack) { BindVenues(); LoadGrid(); }
+        }
+
+        private void BindVenues()
+        {
+            try
             {
-                Bind_Grid();
-                BindDDL();
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT VenueId, Name FROM Venues ORDER BY Name", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    ddlVenueId.DataSource = dt;
+                    ddlVenueId.DataValueField = "VenueId";
+                    ddlVenueId.DataTextField = "Name";
+                    ddlVenueId.DataBind();
+                    ddlVenueId.Items.Insert(0, new ListItem("-- Select Venue --", ""));
+                }
             }
-
+            catch { ddlVenueId.Items.Insert(0, new ListItem("-- Error --", "")); }
         }
 
-
-
-        protected void btn_Insert_Click(object sender, EventArgs e)
+        private void LoadGrid()
         {
-            String selectedtype = string.Empty;
-
-            if (rbt_2d.Checked)
+            try
             {
-                selectedtype = rbt_2d.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(@"SELECT h.HallId, v.Name AS VenueName, h.Name, h.HallType, h.TotalCapacity
+                        FROM Halls h JOIN Venues v ON v.VenueId=h.VenueId ORDER BY v.Name, h.Name", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    gvHalls.DataSource = dt; gvHalls.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
             }
-            else if (rbt_3d.Checked)
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        private string GetHallType()
+        {
+            if (rb2D.Checked) return "2D";
+            if (rb3D.Checked) return "3D";
+            if (rbIMAX.Checked) return "IMAX";
+            if (rb4DX.Checked) return "4DX";
+            if (rbDolby.Checked) return "Dolby";
+            return "";
+        }
+
+        private void SetHallType(string t)
+        {
+            rb2D.Checked = t == "2D"; rb3D.Checked = t == "3D";
+            rbIMAX.Checked = t == "IMAX"; rb4DX.Checked = t == "4DX"; rbDolby.Checked = t == "Dolby";
+        }
+
+        protected void btnInsert_Click(object sender, EventArgs e)
+        {
+            if (!Validate()) return;
+            try
             {
-                selectedtype = rbt_3d.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("INSERT INTO Halls(VenueId,Name,HallType,TotalCapacity) VALUES(@vid,@n,@ht,@cap)", con);
+                    cmd.Parameters.AddWithValue("@vid", int.Parse(ddlVenueId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@n", txtHallName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@ht", GetHallType());
+                    cmd.Parameters.AddWithValue("@cap", int.Parse(txtCapacity.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Hall inserted!", true); ClearFields(); LoadGrid();
             }
-            else if (rbt_imax.Checked)
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        protected void btnSave_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtHallId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
             {
-                selectedtype = rbt_imax.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("UPDATE Halls SET VenueId=@vid,Name=@n,HallType=@ht,TotalCapacity=@cap WHERE HallId=@id", con);
+                    cmd.Parameters.AddWithValue("@vid", int.Parse(ddlVenueId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@n", txtHallName.Text.Trim());
+                    cmd.Parameters.AddWithValue("@ht", GetHallType());
+                    cmd.Parameters.AddWithValue("@cap", int.Parse(txtCapacity.Text));
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtHallId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Hall updated!", true); ClearFields(); LoadGrid();
             }
-            else
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+
+        protected void gvHalls_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
             {
-                selectedtype = rbt_4dx.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Halls WHERE HallId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtHallId.Text = r["HallId"].ToString();
+                        ddlVenueId.SelectedValue = r["VenueId"].ToString();
+                        txtHallName.Text = r["Name"].ToString();
+                        SetHallType(r["HallType"].ToString());
+                        txtCapacity.Text = r["TotalCapacity"].ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
             }
-
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "INSERT INTO Halls(VenueId,Name,HallType,TotalCapacity) VALUES(@id,@name,@type,@totcap);";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-
-            //cmd.Parameters.AddWithValue("@id", ddl_Venue.SelectedItem.Text);
-            cmd.Parameters.AddWithValue("@id", ddl_Venue.SelectedValue);
-            cmd.Parameters.AddWithValue("@name", ddl_Hall.SelectedItem.Text);
-            cmd.Parameters.AddWithValue("@type", selectedtype);
-            //cmd.Parameters.AddWithValue("@totcap", txt_tot_cap.Text);
-            cmd.Parameters.AddWithValue("@totcap", Convert.ToInt32(txt_tot_cap.Text));
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("<script>alert('Record Inserted..');</script>");
-            con.Close();
-
-        }
-
-        protected void btn_Update_Click(object sender, EventArgs e)
-        {
-            string selectedtype = "";
-
-            if (rbt_2d.Checked)
-                selectedtype = rbt_2d.Text;
-            else if (rbt_3d.Checked)
-                selectedtype = rbt_3d.Text;
-            else if (rbt_imax.Checked)
-                selectedtype = rbt_imax.Text;
-            else
-                selectedtype = rbt_4dx.Text;
-
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "UPDATE Halls SET VenueId=@id, Name=@name, HallType=@type, TotalCapacity=@totcap WHERE HallId=@h_id";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            int hallId = Convert.ToInt32(gv_Halls.DataKeys[gv_Halls.SelectedIndex].Value);
-
-            cmd.Parameters.AddWithValue("@h_id", hallId);
-            cmd.Parameters.AddWithValue("@id", ddl_Venue.SelectedValue);
-            cmd.Parameters.AddWithValue("@name", ddl_Hall.SelectedItem.Text);
-            cmd.Parameters.AddWithValue("@type", selectedtype);
-            cmd.Parameters.AddWithValue("@totcap", Convert.ToInt32(txt_tot_cap.Text));
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-
-            Response.Write("<script>alert('Record Updated');</script>");
-            Bind_Grid();
-        }
-
-        public void Bind_Grid()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = @"SELECT h.HallId,
-                          v.Name AS VenueName,
-                          h.Name,
-                          h.HallType,
-                          h.TotalCapacity
-                   FROM Halls h
-                   INNER JOIN Venues v ON h.VenueId = v.VenueId";
-
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataTable dt = new DataTable();
-            adpt.Fill(dt);
-
-            gv_Halls.DataSource = dt;
-            gv_Halls.DataBind();
-        }
-
-        protected void gv_Halls_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            GridViewRow row = gv_Halls.SelectedRow;
-
-            // Venue
-            string venueName = row.Cells[2].Text;
-            if (ddl_Venue.Items.FindByText(venueName) != null)
+            else if (e.CommandName == "DeleteRow")
             {
-                ddl_Venue.ClearSelection();
-                ddl_Venue.Items.FindByText(venueName).Selected = true;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("DELETE FROM Halls WHERE HallId=@id", con);
+                    cmd.Parameters.AddWithValue("@id", id); con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("🗑️ Hall deleted!", true); ClearFields(); LoadGrid();
             }
-
-            // 🔹 Load halls for selected venue
-            LoadHalls();
-
-            // Hall
-            string hallName = row.Cells[3].Text;
-            if (ddl_Hall.Items.FindByText(hallName) != null)
-            {
-                ddl_Hall.ClearSelection();
-                ddl_Hall.Items.FindByText(hallName).Selected = true;
-            }
-
-            string hallType = row.Cells[4].Text;
-
-            if (hallType == "2D") rbt_2d.Checked = true;
-            else if (hallType == "3D") rbt_3d.Checked = true;
-            else if (hallType == "IMAX") rbt_imax.Checked = true;
-            else if (hallType == "4DX") rbt_4dx.Checked = true;
-
-            txt_tot_cap.Text = row.Cells[5].Text;
         }
 
-        public void LoadHalls()
+        private void ClearFields() { txtHallId.Text = txtHallName.Text = txtCapacity.Text = ""; ddlVenueId.SelectedIndex = 0; rb2D.Checked = false; rb3D.Checked = false; rbIMAX.Checked = false; rb4DX.Checked = false; rbDolby.Checked = false; }
+        private bool Validate()
         {
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
-
-            SqlCommand cmd = new SqlCommand("select * from Halls where VenueId=@VenueId", con);
-            cmd.Parameters.AddWithValue("@VenueId", ddl_Venue.SelectedValue);
-
-            ddl_Hall.DataSource = cmd.ExecuteReader();
-            ddl_Hall.DataTextField = "Name";
-            ddl_Hall.DataValueField = "HallId";
-            ddl_Hall.DataBind();
-
-            con.Close();
+            if (string.IsNullOrEmpty(ddlVenueId.SelectedValue)) { ShowMessage("⚠️ Select Venue.", false); return false; }
+            if (string.IsNullOrEmpty(txtHallName.Text.Trim())) { ShowMessage("⚠️ Hall Name required.", false); return false; }
+            if (string.IsNullOrEmpty(GetHallType())) { ShowMessage("⚠️ Select Hall Type.", false); return false; }
+            if (string.IsNullOrEmpty(txtCapacity.Text.Trim())) { ShowMessage("⚠️ Capacity required.", false); return false; }
+            return true;
         }
-        //You are trying to delete a Hall that still has Seats connected to it.
-
-
-        //protected void gv_Halls_RowDeleting(object sender, GridViewDeleteEventArgs e)
-        //{
-        //    GridViewRow row = gv_Halls.Rows[e.RowIndex];
-        //    int HallId = Convert.ToInt32(row.Cells[1].Text);
-
-        //    string qry = "DELETE FROM Halls WHERE HallId = @HallId";
-
-        //    SqlConnection con = new SqlConnection(strcon);
-        //    SqlCommand cmd = new SqlCommand(qry, con);
-
-        //    cmd.Parameters.AddWithValue("@HallId", HallId);
-        //    con.Open();
-        //    cmd.ExecuteNonQuery();
-        //    con.Close();
-        //    Bind_Grid();
-        //}
-        protected void gv_Halls_RowDeleting(object sender, GridViewDeleteEventArgs e)
-        {
-            GridViewRow row = gv_Halls.Rows[e.RowIndex];
-            int HallId = Convert.ToInt32(row.Cells[1].Text);
-
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
-
-            // delete seats first
-            SqlCommand cmd1 = new SqlCommand("DELETE FROM Seats WHERE HallId=@HallId", con);
-            cmd1.Parameters.AddWithValue("@HallId", HallId);
-            cmd1.ExecuteNonQuery();
-
-            // then delete hall
-            SqlCommand cmd2 = new SqlCommand("DELETE FROM Halls WHERE HallId=@HallId", con);
-            cmd2.Parameters.AddWithValue("@HallId", HallId);
-            cmd2.ExecuteNonQuery();
-
-            con.Close();
-
-            Bind_Grid();
-        }
-
-        protected void ddl_Venue_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
-            SqlCommand cmd = new SqlCommand("select * from Halls where VenueId=@VenueId", con);
-            cmd.Parameters.AddWithValue("VenueId", ddl_Venue.SelectedValue);
-            ddl_Hall.DataSource = cmd.ExecuteReader();
-            ddl_Hall.DataTextField = "Name";
-            ddl_Hall.DataValueField = "HallId";
-            ddl_Hall.DataBind();
-            con.Close();
-        }
-
-        public void BindDDL()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
-            String query = "select * from Venues";
-            SqlDataAdapter sda = new SqlDataAdapter(query, con);
-            DataTable dt = new DataTable();
-            sda.Fill(dt);
-            ddl_Venue.DataSource = dt;
-            ddl_Venue.DataBind();
-            ddl_Venue.DataTextField = "Name";
-            ddl_Venue.DataValueField = "VenueId";
-            ddl_Venue.DataBind();
-            con.Close();
-
-        }
-
+        private void ShowMessage(string msg, bool ok) { lblMessage.Text = msg; lblMessage.CssClass = ok ? "alert msg-success" : "alert msg-error"; lblMessage.Visible = true; }
     }
 }

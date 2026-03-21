@@ -14,9 +14,9 @@ namespace EventGlint
         protected void Page_Load(object sender, EventArgs e)
         {
             // ── Session Guard ──────────────────────────────────────────────────
-            if (Session["AdminID"] == null)
+            if (Session["Username"] == null)
             {
-                Response.Redirect("Log.aspx");
+                Response.Redirect("~/Log.aspx");
                 return;
             }
 
@@ -32,7 +32,7 @@ namespace EventGlint
         {
             try
             {
-                string adminName = Session["AdminName"]?.ToString() ?? "Admin";
+                string adminName = Session["Username"]?.ToString() ?? "Admin";
                 lbl_AdminName.Text = adminName;
 
                 // First letter of name for avatar
