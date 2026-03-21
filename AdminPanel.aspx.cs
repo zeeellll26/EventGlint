@@ -8,13 +8,13 @@ namespace EventGlint
 {
     public partial class AdminPanel : Page
     {
-        // ── Connection string from Web.config ──────────────────────────────────
+        
         private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // ── Session Guard ──────────────────────────────────────────────────
-            if (Session["AdminID"] == null)
+            
+            if (Session["Username"] == null)
             {
                 Response.Redirect("Log.aspx");
                 return;
@@ -27,15 +27,15 @@ namespace EventGlint
             }
         }
 
-        // ── Admin Name & Avatar Initial ────────────────────────────────────────
+        
         private void LoadAdminInfo()
         {
             try
             {
-                string adminName = Session["AdminName"]?.ToString() ?? "Admin";
+                string adminName = Session["Username"]?.ToString() ?? "Admin";
                 lbl_AdminName.Text = adminName;
 
-                // First letter of name for avatar
+                
                 lbl_AvatarInitial.Text = adminName.Length > 0
                     ? adminName[0].ToString().ToUpper()
                     : "A";
@@ -47,7 +47,7 @@ namespace EventGlint
             }
         }
 
-        // ── Dashboard Stats ────────────────────────────────────────────────────
+        
         private void LoadStats()
         {
             try
@@ -65,7 +65,7 @@ namespace EventGlint
                     // Total Users
                     lbl_TotalUsers.Text = GetScalar(con, "SELECT COUNT(*) FROM Users").ToString();
 
-                    // Total Revenue  (adjust column/table name to match your schema)
+                    // Total Revenu
                     object revenue = GetScalar(con, "SELECT ISNULL(SUM(Amount), 0) FROM Payments");
                     decimal rev = Convert.ToDecimal(revenue);
                     lbl_TotalRevenue.Text = "₹" + rev.ToString("N0");
@@ -73,8 +73,7 @@ namespace EventGlint
             }
             catch (Exception ex)
             {
-                // Silently fall back — stats will show "—" (set in markup)
-                // Optionally log: System.Diagnostics.Debug.WriteLine(ex.Message);
+                
                 lbl_TotalEvents.Text = "—";
                 lbl_TotalBookings.Text = "—";
                 lbl_TotalUsers.Text = "—";
@@ -82,7 +81,7 @@ namespace EventGlint
             }
         }
 
-        // ── Helper: single-value query ─────────────────────────────────────────
+        
         private object GetScalar(SqlConnection con, string query)
         {
             using (SqlCommand cmd = new SqlCommand(query, con))
