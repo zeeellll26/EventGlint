@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
@@ -14,9 +14,10 @@ namespace EventGlint
         protected void Page_Load(object sender, EventArgs e)
         {
             
+            // ── Session Guard ──────────────────────────────────────────────────
             if (Session["Username"] == null)
             {
-                Response.Redirect("Log.aspx");
+                Response.Redirect("~/Log.aspx");
                 return;
             }
 

@@ -1,131 +1,125 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
     public partial class EditReviews : System.Web.UI.Page
     {
-        String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            lbl_AvatarInitial.Text = (Session["Username"]?.ToString() ?? "A")[0].ToString().ToUpper();
+            if (!IsPostBack) { BindDropdowns(); LoadGrid(); }
+        }
+        private void BindDropdowns()
+        {
+            try
             {
-                Bind_Grid();
-                Bind_ddl_Events();
-            }
-        }
-
-        protected void Bind_ddl_Events()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-            con.Open();
-            string qry = "SELECT * FROM Events";
-
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataTable dt = new DataTable();
-            adpt.Fill(dt);
-
-            ddl_Events.DataSource = dt;
-            ddl_Events.DataBind();
-            ddl_Events.DataTextField = "Title";
-            ddl_Events.DataValueField = "EventId";
-            ddl_Events.DataBind();
-
-            ddl_Events.Items.Insert(0, new ListItem("Select Event", "0"));
-            con.Close();
-        }
-        protected void Bind_Grid()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "SELECT * FROM Reviews";
-
-            con.Open();
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataSet ds = new DataSet();
-            adpt.Fill(ds);
-
-            gv_Reviews.DataSource = ds;
-            gv_Reviews.DataBind();
-            con.Close();
-        }
-
-        protected void gv_Reviews_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            GridViewRow row = gv_Reviews.SelectedRow;
-            txt_ReviewId.Text = row.Cells[1].Text;
-            txt_UserId.Text = row.Cells[2].Text;
-            for(int i = 0; i < ddl_Events.Items.Count; i++)
-            {
-                if (ddl_Events.Items[i].Text == row.Cells[3].Text)
+                using (SqlConnection con = new SqlConnection(connStr))
                 {
-                    ddl_Events.SelectedIndex = i;
+                    // Users
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT UserId, Username FROM Users ORDER BY Username", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    ddlUserId.DataSource = dt; ddlUserId.DataValueField = "UserId"; ddlUserId.DataTextField = "Username"; ddlUserId.DataBind();
+                    ddlUserId.Items.Insert(0, new ListItem("-- Select User --", ""));
+                    // Events
+                    da = new SqlDataAdapter("SELECT EventId, Title FROM Events ORDER BY Title", con);
+                    dt = new DataTable(); da.Fill(dt);
+                    ddlEventId.DataSource = dt; ddlEventId.DataValueField = "EventId"; ddlEventId.DataTextField = "Title"; ddlEventId.DataBind();
+                    ddlEventId.Items.Insert(0, new ListItem("-- Select Event --", ""));
                 }
             }
-            txt_Rating.Text = row.Cells[4].Text;
-            txt_ReviewText.Text = row.Cells[5].Text;
-            txt_CreatedAt.Text = row.Cells[6].Text;
+            catch { }
         }
-
-
-        protected void gv_Reviews_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        private void LoadGrid()
         {
-            GridViewRow row = gv_Reviews.Rows[e.RowIndex];
-            int reviewId = Convert.ToInt32(row.Cells[1].Text);
-
-            string qry = "DELETE FROM Reviews WHERE ReviewId = @ReviewId";
-
-            SqlConnection con = new SqlConnection(strcon);
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@ReviewId", reviewId);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            Bind_Grid();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(@"SELECT r.ReviewId, u.Username AS UserName, e.Title AS EventTitle, r.Rating, r.ReviewText, r.CreatedAt
+                        FROM Reviews r JOIN Users u ON u.UserId=r.UserId JOIN Events e ON e.EventId=r.EventId ORDER BY r.ReviewId DESC", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    gvData.DataSource = dt; gvData.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
-
-        protected void btn_Update_Click(object sender, EventArgs e)
+        protected void btnInsert_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "UPDATE Reviews SET EventId = @EventId, Rating = @Rating, ReviewText = @ReviewText WHERE ReviewId = @ReviewId";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-            cmd.Parameters.AddWithValue("@ReviewId", txt_ReviewId.Text);
-            cmd.Parameters.AddWithValue("@EventId", ddl_Events.SelectedIndex);
-            cmd.Parameters.AddWithValue("@Rating", txt_Rating.Text);
-            cmd.Parameters.AddWithValue("@ReviewText", txt_ReviewText.Text);
-            //cmd.Parameters.AddWithValue("@CreatedAt", txt_CreatedAt.Text);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("Review Details Updated..");
-            con.Close();
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("INSERT INTO Reviews(UserId,EventId,Rating,ReviewText,CreatedAt) VALUES(@uid,@eid,@rat,@txt,GETDATE())", con);
+                    cmd.Parameters.AddWithValue("@uid", int.Parse(ddlUserId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@eid", int.Parse(ddlEventId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@rat", int.Parse(ddlRating.SelectedValue));
+                    cmd.Parameters.AddWithValue("@txt", txtReviewText.Text.Trim());
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Review inserted!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
-
-        protected void btn_Insert_Click(object sender, EventArgs e)
+        protected void btnSave_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "INSERT INTO Reviews(UserId,EventId,Rating,ReviewText) VALUES(@UserId,@EventId,@Rating,@ReviewText);";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-            cmd.Parameters.AddWithValue("@UserId", txt_UserId.Text);
-            cmd.Parameters.AddWithValue("@EventId", ddl_Events.SelectedValue);
-            cmd.Parameters.AddWithValue("@Rating", txt_Rating.Text);
-            cmd.Parameters.AddWithValue("@ReviewText", txt_ReviewText.Text);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("<script>alert('Record Inserted..');</script>");
-            con.Close();
+            if (string.IsNullOrEmpty(txtReviewId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("UPDATE Reviews SET UserId=@uid,EventId=@eid,Rating=@rat,ReviewText=@txt WHERE ReviewId=@id", con);
+                    cmd.Parameters.AddWithValue("@uid", int.Parse(ddlUserId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@eid", int.Parse(ddlEventId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@rat", int.Parse(ddlRating.SelectedValue));
+                    cmd.Parameters.AddWithValue("@txt", txtReviewText.Text.Trim());
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtReviewId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Review updated!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+        protected void gvData_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Reviews WHERE ReviewId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtReviewId.Text = r["ReviewId"].ToString();
+                        ddlUserId.SelectedValue = r["UserId"].ToString();
+                        ddlEventId.SelectedValue = r["EventId"].ToString();
+                        ddlRating.SelectedValue = r["Rating"].ToString();
+                        txtReviewText.Text = r["ReviewText"].ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                { SqlCommand cmd = new SqlCommand("DELETE FROM Reviews WHERE ReviewId=@id", con); cmd.Parameters.AddWithValue("@id", id); con.Open(); cmd.ExecuteNonQuery(); }
+                ShowMessage("🗑️ Review deleted!", true); ClearFields(); LoadGrid();
+            }
+        }
+        private void ClearFields() { txtReviewId.Text = txtReviewText.Text = ""; ddlUserId.SelectedIndex = ddlEventId.SelectedIndex = ddlRating.SelectedIndex = 0; }
+        private bool Validate() { if (string.IsNullOrEmpty(ddlUserId.SelectedValue)) { ShowMessage("⚠️ Select User.", false); return false; } if (string.IsNullOrEmpty(ddlEventId.SelectedValue)) { ShowMessage("⚠️ Select Event.", false); return false; } if (string.IsNullOrEmpty(ddlRating.SelectedValue)) { ShowMessage("⚠️ Select Rating.", false); return false; } return true; }
+        private void ShowMessage(string msg, bool ok) { lblMessage.Text = msg; lblMessage.CssClass = ok ? "alert msg-success" : "alert msg-error"; lblMessage.Visible = true; }
     }
 }

@@ -1,210 +1,319 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="EditBookings.aspx.cs" Inherits="EventGlint.Admin.EditBookings" %>
-
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Booking Form</title>
-
+    <title>Edit Bookings — EventGlint</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+        :root {
+            --bg:#f4f6fb; --surface:#ffffff; --card:#ffffff; --border:#e4e8f0;
+            --accent:#5b3ff8; --accent2:#c026d3; --accent-light:rgba(91,63,248,0.08);
+            --gold:#d97706; --text:#1a1d2e; --sub:#3d4163; --muted:#8b92b8;
+            --danger:#e53935; --success:#059669;
+            --shadow-sm:0 1px 4px rgba(91,63,248,0.06);
+            --shadow-md:0 4px 20px rgba(91,63,248,0.10);
+            --shadow-lg:0 8px 32px rgba(91,63,248,0.14);
         }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+        body::before{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(91,63,248,0.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
+        body::after{content:'';position:fixed;bottom:-150px;left:-150px;width:500px;height:500px;background:radial-gradient(circle,rgba(192,38,211,0.05) 0%,transparent 70%);pointer-events:none;z-index:0;}
 
-        .form-container {
-            width: 500px;
-            margin: 60px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+        /* SIDEBAR */
+        .sidebar{position:fixed;top:0;left:0;width:248px;height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;box-shadow:2px 0 16px rgba(91,63,248,0.06);}
+        .sidebar-logo{padding:26px 22px 20px;border-bottom:1px solid var(--border);}
+        .sidebar-logo .brand{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:var(--text);}
+        .sidebar-logo .brand span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        .sidebar-logo .badge{display:inline-block;margin-top:7px;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);background:var(--accent-light);border:1px solid rgba(91,63,248,0.18);padding:3px 10px;border-radius:20px;}
+        .sidebar-nav{flex:1;overflow-y:auto;padding:14px 10px;}
+        .sidebar-nav::-webkit-scrollbar{width:3px;}
+        .sidebar-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+        .nav-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 12px 5px;}
+        .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;text-decoration:none;color:var(--sub);font-size:13.5px;font-weight:500;transition:all 0.18s;margin-bottom:1px;}
+        .nav-item i{width:17px;font-size:13px;text-align:center;color:var(--muted);transition:color 0.18s;}
+        .nav-item:hover{background:var(--accent-light);color:var(--accent);}
+        .nav-item:hover i{color:var(--accent);}
+        .nav-item.active{background:linear-gradient(135deg,rgba(91,63,248,0.12),rgba(192,38,211,0.06));color:var(--accent);font-weight:600;}
+        .nav-item.active i{color:var(--accent);}
+        .sidebar-footer{padding:14px 10px;border-top:1px solid var(--border);}
+        .logout-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border-radius:8px;background:#fff1f1;border:1px solid #fecaca;color:var(--danger);font-size:13.5px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;text-decoration:none;transition:all 0.18s;}
+        .logout-btn:hover{background:#ffe4e4;border-color:#f87171;}
 
-        .input {
-            width: 100%;
-            padding: 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
+        /* MAIN */
+        .main{margin-left:248px;min-height:100vh;position:relative;z-index:1;}
+        .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 36px;background:rgba(255,255,255,0.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm);}
+        .topbar-left h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);}
+        .topbar-left p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+        .topbar-right{display:flex;align-items:center;gap:12px;}
+        .topbar-time{font-size:12.5px;color:var(--sub);background:var(--bg);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-weight:500;}
+        .admin-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:white;box-shadow:0 2px 10px rgba(91,63,248,0.28);}
+        .content{padding:30px 36px;}
 
-            .input:focus {
-                border-color: #5f5d5b;
-                outline: none;
-            }
+        /* BANNER */
+        .welcome-banner{position:relative;overflow:hidden;background:linear-gradient(135deg,#5b3ff8 0%,#c026d3 100%);border-radius:16px;padding:32px 36px;margin-bottom:28px;box-shadow:var(--shadow-lg);}
+        .welcome-banner::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;background:rgba(255,255,255,0.07);border-radius:50%;}
+        .welcome-banner::after{content:'';position:absolute;bottom:-80px;right:120px;width:200px;height:200px;background:rgba(255,255,255,0.05);border-radius:50%;}
+        .welcome-banner .greeting{font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.75);margin-bottom:8px;}
+        .welcome-banner h1{font-family:'Playfair Display',serif;font-size:27px;font-weight:700;color:#fff;margin-bottom:6px;position:relative;z-index:1;}
+        .welcome-banner p{font-size:13.5px;color:rgba(255,255,255,0.72);position:relative;z-index:1;}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        .section-title{font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+        .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
 
-        td {
-            padding: 10px;
-        }
+        .body-grid{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start;}
 
-        .button {
-            padding: 8px 18px;
-            border: 1px;
-            border-radius: 5px;
-            background-color: darkslateblue;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
+        /* FORM CARD */
+        .form-card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow 0.22s;}
+        .form-card:hover{box-shadow:var(--shadow-md);}
+        .form-card-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:13px;}
+        .form-card-icon{width:40px;height:40px;border-radius:11px;background:var(--accent-light);border:1px solid rgba(91,63,248,0.15);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--accent);}
+        .form-card-title{font-size:14px;font-weight:600;color:var(--text);}
+        .form-card-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+        .form-card-body{padding:22px;}
 
-            .button:hover {
-                background-color: white;
-                color: darkslateblue;
-                border: 1px solid darkslateblue;
-            }
+        .field{margin-bottom:15px;}
+        .field label{display:block;font-size:11px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+        .req{color:var(--danger);margin-left:2px;}
+        .field input,.field select{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:13.5px;color:var(--text);background:var(--bg);font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+        .field input:focus,.field select:focus{outline:none;border-color:var(--accent);background:white;box-shadow:0 0 0 3px rgba(91,63,248,0.10);}
+        .field input[readonly]{background:var(--accent-light);color:var(--accent);font-weight:600;cursor:not-allowed;border-color:rgba(91,63,248,0.2);}
 
-        h2 {
-            text-align: center;
-            color: darkslateblue;
-            margin-bottom: 20px;
-        }
+        /* Radio */
+        .radio-group{display:flex;flex-direction:column;gap:8px;padding:4px 0;}
+        .radio-item{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--sub);cursor:pointer;}
+        .radio-item input[type=radio]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+
+        .btn-row{display:flex;gap:9px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);}
+        .btn{flex:1;padding:10px 8px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+        .btn:hover{transform:translateY(-1px);filter:brightness(1.08);}
+        .btn:active{transform:translateY(0);}
+        .btn-insert{background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;box-shadow:0 3px 12px rgba(91,63,248,0.25);}
+        .btn-save{background:linear-gradient(135deg,#059669,#10b981);color:white;box-shadow:0 3px 12px rgba(5,150,105,0.22);}
+        .btn-clear{background:var(--bg);color:var(--sub);border:1.5px solid var(--border);}
+        .btn-clear:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light);}
+
+        .alert{padding:10px 14px;border-radius:9px;font-size:13px;margin-bottom:15px;display:flex;align-items:center;gap:8px;font-weight:500;}
+        .msg-success{background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;}
+        .msg-error{background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;}
+
+        /* TABLE CARD */
+        .table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);overflow:hidden;transition:box-shadow 0.22s;}
+        .table-card:hover{box-shadow:var(--shadow-md);}
+        .table-card-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+        .table-card-head h3{font-size:14px;font-weight:600;color:var(--text);}
+        .count-badge{font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-light);border:1px solid rgba(91,63,248,0.18);padding:3px 11px;border-radius:20px;}
+        .tbl-wrap{overflow-x:auto;}
+        table{width:100%;border-collapse:collapse;}
+        thead tr{background:rgba(91,63,248,0.04);}
+        thead th{padding:11px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid var(--border);white-space:nowrap;}
+        tbody tr{border-bottom:1px solid rgba(228,232,240,0.6);transition:background 0.14s;}
+        tbody tr:last-child{border-bottom:none;}
+        tbody tr:hover{background:rgba(91,63,248,0.03);}
+        tbody td{padding:12px 14px;font-size:13px;color:var(--sub);white-space:nowrap;}
+        .status-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;}
+        .s-confirmed{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
+        .s-pending{background:rgba(217,119,6,0.10);color:var(--gold);border:1px solid rgba(217,119,6,0.25);}
+        .s-cancelled{background:#fee2e2;color:var(--danger);border:1px solid #fca5a5;}
+        .s-refunded{background:rgba(91,63,248,0.10);color:var(--accent);border:1px solid rgba(91,63,248,0.2);}
+        .tbtn{padding:5px 12px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+        .tbtn:hover{transform:translateY(-1px);}
+        .tbtn-select{background:var(--accent-light);color:var(--accent);border:1px solid rgba(91,63,248,0.2);}
+        .tbtn-select:hover{background:rgba(91,63,248,0.15);}
+        .tbtn-delete{background:#fff1f1;color:var(--danger);border:1px solid #fecaca;margin-left:4px;}
+        .tbtn-delete:hover{background:#fee2e2;}
+
+        .fade-in{opacity:0;transform:translateY(14px);animation:fadeUp 0.45s ease forwards;}
+        @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+        .fade-in:nth-child(1){animation-delay:0.04s;}
+        .fade-in:nth-child(2){animation-delay:0.10s;}
+        .fade-in:nth-child(3){animation-delay:0.16s;}
+        @media(max-width:1100px){.body-grid{grid-template-columns:1fr;}}
+        @media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;}.content{padding:20px 16px;}}
     </style>
-
 </head>
-
 <body>
-    <form id="form1" runat="server">
-        <div class="form-container">
+<form id="form1" runat="server">
 
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="brand">Event<span>Glint</span></div>
+        <div class="badge">Admin Portal</div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-label">Dashboard</div>
+        <a href="../AdminPanel.aspx" class="nav-item"><i class="fas fa-th-large"></i> Overview</a>
+        <div class="nav-label" style="margin-top:8px">Management</div>
+        <a href="EditEvents.aspx"      class="nav-item"><i class="fas fa-calendar-star"></i> Events</a>
+        <a href="EditShows.aspx"       class="nav-item"><i class="fas fa-film"></i> Shows</a>
+        <a href="EditBookings.aspx"    class="nav-item active"><i class="fas fa-ticket"></i> Bookings</a>
+        <a href="EditBookedSeats.aspx" class="nav-item"><i class="fas fa-chair"></i> Booked Seats</a>
+        <a href="EditPayments.aspx"    class="nav-item"><i class="fas fa-credit-card"></i> Payments</a>
+        <div class="nav-label" style="margin-top:8px">Venue &amp; Setup</div>
+        <a href="EditVenue.aspx"          class="nav-item"><i class="fas fa-building"></i> Venues</a>
+        <a href="EditHalls.aspx"          class="nav-item"><i class="fas fa-door-open"></i> Halls</a>
+        <a href="EditSeats.aspx"          class="nav-item"><i class="fas fa-couch"></i> Seats</a>
+        <a href="EditSeatCategories.aspx" class="nav-item"><i class="fas fa-tags"></i> Seat Categories</a>
+        <a href="EditCities.aspx"         class="nav-item"><i class="fas fa-city"></i> Cities</a>
+        <div class="nav-label" style="margin-top:8px">Users &amp; More</div>
+        <a href="EditUsers.aspx"   class="nav-item"><i class="fas fa-users"></i> Users</a>
+        <a href="EditAdmins.aspx"  class="nav-item"><i class="fas fa-user-shield"></i> Admins</a>
+        <a href="EditCoupons.aspx" class="nav-item"><i class="fas fa-percent"></i> Coupons</a>
+        <a href="EditReviews.aspx" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="../Log.aspx" class="logout-btn"><i class="fas fa-arrow-right-from-bracket"></i> Logout</a>
+    </div>
+</aside>
 
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-left">
+            <h2>Edit Bookings</h2>
+            <p>View, add and manage all ticket bookings</p>
+        </div>
+        <div class="topbar-right">
+            <div class="topbar-time" id="liveTime"></div>
+            <div class="admin-avatar"><asp:Label ID="lbl_AvatarInitial" runat="server" Text="A" /></div>
+        </div>
+    </div>
 
-            <h2>Booking Form</h2>
-
-            <table>
-
-                <tr>
-                    <td>BookingId</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtBookingId" runat="server"></asp:TextBox>
-                        <asp:RequiredFieldValidator ID="rfvCode" runat="server"
-                            ControlToValidate="txtBookingId"
-                            ErrorMessage="Required" ForeColor="Red">
-                        </asp:RequiredFieldValidator>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>UserId</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtUserId" runat="server"></asp:TextBox>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Show Name</td>
-                    <td>
-                        <asp:DropDownList CssClass="input" ID="ddlShowId" runat="server">
-                            <asp:ListItem Value="1">hello</asp:ListItem>
-                            <asp:ListItem Value="2">welcome</asp:ListItem>
-                            <asp:ListItem Value="3">fun</asp:ListItem>
-                            <asp:ListItem Value="4">active</asp:ListItem>
-                        </asp:DropDownList>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>BookingDate</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtBookingDate" runat="server" TextMode="Date"></asp:TextBox>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>TotalAmount</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtTotalAmount" runat="server"></asp:TextBox>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>DiscountAmount</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtDiscountAmount" runat="server"></asp:TextBox>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>FinalAmount</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtFinalAmount" runat="server"></asp:TextBox>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Status</td>
-                    <td>
-                        <asp:RadioButtonList ID="rblStatus" runat="server">
-                            <asp:ListItem>Confirmed</asp:ListItem>
-                            <asp:ListItem>Pending</asp:ListItem>
-                            <asp:ListItem>Cancelled</asp:ListItem>
-                        </asp:RadioButtonList>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>BookingRef</td>
-                    <td>
-                        <asp:TextBox CssClass="input" ID="txtBookingRef" runat="server"></asp:TextBox>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Coupon Name</td>
-                    <td>
-                        <asp:DropDownList CssClass="input" ID="ddlCouponId" runat="server">
-                            <asp:ListItem Value="1">EVENT10%</asp:ListItem>
-                            <asp:ListItem Value="6">EVENT15%</asp:ListItem>
-                            <asp:ListItem Value="8">EVENT11!!</asp:ListItem>
-                            <asp:ListItem Value="2">HURRYYUPPP</asp:ListItem>
-                        </asp:DropDownList>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td colspan="2" align="center">
-                        <asp:Button CssClass="button" ID="btnInsert" runat="server" Text="Book" OnClick="btnInsert_Click" />
-                        <asp:Button CssClass="button" ID="btnUpdate" runat="server" Text="Update" OnClick="btnUpdate_Click" />
-                    </td>
-                </tr>
-
-            </table>
+    <div class="content">
+        <div class="welcome-banner fade-in">
+            <div class="greeting">🎟️ Booking Management</div>
+            <h1>Manage Bookings</h1>
+            <p>Add new bookings, update existing ones or remove cancelled records.</p>
         </div>
 
-        <asp:GridView ID="GridView11" runat="server"
-            AutoGenerateDeleteButton="True"
-            AutoGenerateSelectButton="True"
-            DataKeyNames="BookingId"
-            OnSelectedIndexChanged="GridView11_SelectedIndexChanged"
-            OnRowDeleting="GridView11_RowDeleting"
-            BackColor="White"
-            BorderColor="#E7E7FF"
-            BorderStyle="None"
-            BorderWidth="1px"
-            CellPadding="3"
-            GridLines="Horizontal" HorizontalAlign="Center" Width="70%">
-            <AlternatingRowStyle BackColor="#F7F7F7" />
-            <FooterStyle BackColor="#B5C7DE" ForeColor="#4A3C8C" />
-            <HeaderStyle BackColor="#4A3C8C" Font-Bold="True" ForeColor="#F7F7F7" />
-            <PagerStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" HorizontalAlign="Right" />
-            <RowStyle BackColor="#E7E7FF" ForeColor="#4A3C8C" />
-            <SelectedRowStyle BackColor="#738A9C" Font-Bold="True" ForeColor="#F7F7F7" />
-            <SortedAscendingCellStyle BackColor="#F4F4FD" />
-            <SortedAscendingHeaderStyle BackColor="#5A4C9D" />
-            <SortedDescendingCellStyle BackColor="#D8D8F0" />
-            <SortedDescendingHeaderStyle BackColor="#3E3277" />
-        </asp:GridView>
+        <div class="section-title">Add / Edit Booking</div>
 
+        <div class="body-grid">
 
+            <!-- FORM -->
+            <div class="form-card fade-in">
+                <div class="form-card-head">
+                    <div class="form-card-icon"><i class="fas fa-ticket"></i></div>
+                    <div>
+                        <div class="form-card-title">Booking Details</div>
+                        <div class="form-card-sub">Fill in details and click Insert or Save</div>
+                    </div>
+                </div>
+                <div class="form-card-body">
 
-    </form>
+                    <asp:Label ID="lblMessage" runat="server" Visible="false" />
 
+                    <div class="field">
+                        <label><i class="fas fa-lock" style="opacity:0.4;margin-right:4px"></i>Booking ID</label>
+                        <asp:TextBox ID="txtBookingId" runat="server" ReadOnly="true" placeholder="Auto generated" />
+                    </div>
 
+                    <div class="field">
+                        <label>User <span class="req">*</span></label>
+                        <asp:DropDownList ID="ddlUserId" runat="server" />
+                    </div>
+
+                    <div class="field">
+                        <label>Show <span class="req">*</span></label>
+                        <asp:DropDownList ID="ddlShowId" runat="server" />
+                    </div>
+
+                    <div class="field">
+                        <label>Booking Date <span class="req">*</span></label>
+                        <asp:TextBox ID="txtBookingDate" runat="server" TextMode="Date" />
+                    </div>
+
+                    <div class="field">
+                        <label>Total Amount <span class="req">*</span></label>
+                        <asp:TextBox ID="txtTotalAmount" runat="server" placeholder="e.g. 500.00" TextMode="Number" />
+                    </div>
+
+                    <div class="field">
+                        <label>Discount Amount</label>
+                        <asp:TextBox ID="txtDiscountAmount" runat="server" placeholder="e.g. 50.00" TextMode="Number" />
+                    </div>
+
+                    <div class="field">
+                        <label>Final Amount <span class="req">*</span></label>
+                        <asp:TextBox ID="txtFinalAmount" runat="server" placeholder="e.g. 450.00" TextMode="Number" />
+                    </div>
+
+                    <div class="field">
+                        <label>Status <span class="req">*</span></label>
+                        <div class="radio-group">
+                            <asp:RadioButtonList ID="rblStatus" runat="server" CssClass="radio-group" RepeatLayout="Flow">
+                                <asp:ListItem Text="Confirmed" Value="Confirmed" />
+                                <asp:ListItem Text="Pending"   Value="Pending" Selected="True" />
+                                <asp:ListItem Text="Cancelled" Value="Cancelled" />
+                                <asp:ListItem Text="Refunded"  Value="Refunded" />
+                            </asp:RadioButtonList>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Booking Ref</label>
+                        <asp:TextBox ID="txtBookingRef" runat="server" placeholder="e.g. EG20260320001" />
+                    </div>
+
+                    <div class="field">
+                        <label>Coupon</label>
+                        <asp:DropDownList ID="ddlCouponId" runat="server" />
+                    </div>
+
+                    <div class="btn-row">
+                        <asp:Button ID="btnInsert" runat="server" Text="Insert" CssClass="btn btn-insert" OnClick="btnInsert_Click" />
+                        <asp:Button ID="btnSave"   runat="server" Text="Save"   CssClass="btn btn-save"   OnClick="btnSave_Click" />
+                        <asp:Button ID="btnClear"  runat="server" Text="Clear"  CssClass="btn btn-clear"  OnClick="btnClear_Click" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-card fade-in">
+                <div class="table-card-head">
+                    <h3><i class="fas fa-table" style="margin-right:8px;color:var(--accent)"></i>All Bookings</h3>
+                    <span class="count-badge"><asp:Label ID="lblCount" runat="server" Text="0 records" /></span>
+                </div>
+                <div class="tbl-wrap">
+                    <asp:GridView ID="gvBookings" runat="server"
+                        AutoGenerateColumns="false" DataKeyNames="BookingId"
+                        GridLines="None" EmptyDataText="No bookings found."
+                        OnRowCommand="gvBookings_RowCommand">
+                        <Columns>
+                            <asp:BoundField DataField="BookingId"      HeaderText="ID" />
+                            <asp:BoundField DataField="UserName"       HeaderText="User" />
+                            <asp:BoundField DataField="ShowLabel"      HeaderText="Show" />
+                            <asp:BoundField DataField="BookingDate"    HeaderText="Date" DataFormatString="{0:dd-MM-yyyy}" />
+                            <asp:BoundField DataField="FinalAmount"    HeaderText="Amount" DataFormatString="₹{0:N0}" />
+                            <asp:BoundField DataField="BookingRef"     HeaderText="Ref" />
+                            <asp:TemplateField HeaderText="Status">
+                                <ItemTemplate>
+                                    <span class='status-badge <%# GetStatusBadge(Eval("Status").ToString()) %>'><%# Eval("Status") %></span>
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                            <asp:TemplateField HeaderText="Actions">
+                                <ItemTemplate>
+                                    <asp:Button CommandName="SelectRow" CommandArgument='<%# Eval("BookingId") %>' Text="Edit"   CssClass="tbtn tbtn-select" runat="server" />
+                                    <asp:Button CommandName="DeleteRow" CommandArgument='<%# Eval("BookingId") %>' Text="Delete" CssClass="tbtn tbtn-delete" runat="server" OnClientClick="return confirm('Delete this booking?');" />
+                                </ItemTemplate>
+                            </asp:TemplateField>
+                        </Columns>
+                    </asp:GridView>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</form>
+<script>
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('liveTime').textContent =
+            now.toLocaleTimeString('en-IN', { weekday:'short', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    }
+    updateClock(); setInterval(updateClock, 1000);
+</script>
 </body>
 </html>
-

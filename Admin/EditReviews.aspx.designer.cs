@@ -24,138 +24,111 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// lbl_Reviews control.
+        /// lbl_AvatarInitial control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_Reviews;
+        protected global::System.Web.UI.WebControls.Label lbl_AvatarInitial;
 
         /// <summary>
-        /// txt_ReviewId control.
+        /// lblMessage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_ReviewId;
+        protected global::System.Web.UI.WebControls.Label lblMessage;
 
         /// <summary>
-        /// lbl_UserId control.
+        /// txtReviewId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_UserId;
+        protected global::System.Web.UI.WebControls.TextBox txtReviewId;
 
         /// <summary>
-        /// txt_UserId control.
+        /// ddlUserId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_UserId;
+        protected global::System.Web.UI.WebControls.DropDownList ddlUserId;
 
         /// <summary>
-        /// lbl_EventId control.
+        /// ddlEventId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_EventId;
+        protected global::System.Web.UI.WebControls.DropDownList ddlEventId;
 
         /// <summary>
-        /// ddl_Events control.
+        /// ddlRating control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddl_Events;
+        protected global::System.Web.UI.WebControls.DropDownList ddlRating;
 
         /// <summary>
-        /// lbl_Rating control.
+        /// txtReviewText control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_Rating;
+        protected global::System.Web.UI.WebControls.TextBox txtReviewText;
 
         /// <summary>
-        /// txt_Rating control.
+        /// btnInsert control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_Rating;
+        protected global::System.Web.UI.WebControls.Button btnInsert;
 
         /// <summary>
-        /// lbl_ReviewText control.
+        /// btnSave control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_ReviewText;
+        protected global::System.Web.UI.WebControls.Button btnSave;
 
         /// <summary>
-        /// txt_ReviewText control.
+        /// btnClear control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_ReviewText;
+        protected global::System.Web.UI.WebControls.Button btnClear;
 
         /// <summary>
-        /// lbl_CreatedAt control.
+        /// lblCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_CreatedAt;
+        protected global::System.Web.UI.WebControls.Label lblCount;
 
         /// <summary>
-        /// txt_CreatedAt control.
+        /// gvData control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_CreatedAt;
-
-        /// <summary>
-        /// btn_Insert control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btn_Insert;
-
-        /// <summary>
-        /// btn_Update control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btn_Update;
-
-        /// <summary>
-        /// gv_Reviews control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gv_Reviews;
+        protected global::System.Web.UI.WebControls.GridView gvData;
     }
 }

@@ -24,147 +24,129 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// lbl_BookedSeatid control.
+        /// lbl_AvatarInitial control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_BookedSeatid;
+        protected global::System.Web.UI.WebControls.Label lbl_AvatarInitial;
 
         /// <summary>
-        /// txt_bookedSeatid control.
+        /// lblMessage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_bookedSeatid;
+        protected global::System.Web.UI.WebControls.Label lblMessage;
 
         /// <summary>
-        /// lbl_Bookingid control.
+        /// txtBookedSeatId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_Bookingid;
+        protected global::System.Web.UI.WebControls.TextBox txtBookedSeatId;
 
         /// <summary>
-        /// txt_bookingid control.
+        /// txtBookingId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_bookingid;
+        protected global::System.Web.UI.WebControls.TextBox txtBookingId;
 
         /// <summary>
-        /// lbl_seatid control.
+        /// txtSeatId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_seatid;
+        protected global::System.Web.UI.WebControls.TextBox txtSeatId;
 
         /// <summary>
-        /// txt_seatid control.
+        /// txtShowId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_seatid;
+        protected global::System.Web.UI.WebControls.TextBox txtShowId;
 
         /// <summary>
-        /// lbl_showid control.
+        /// txtPricePaid control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_showid;
+        protected global::System.Web.UI.WebControls.TextBox txtPricePaid;
 
         /// <summary>
-        /// txt_showid control.
+        /// ddlStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_showid;
+        protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
 
         /// <summary>
-        /// lbl_pricePaid control.
+        /// txtHeldUntil control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_pricePaid;
+        protected global::System.Web.UI.WebControls.TextBox txtHeldUntil;
 
         /// <summary>
-        /// txt_pricePaid control.
+        /// btnInsert control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_pricePaid;
+        protected global::System.Web.UI.WebControls.Button btnInsert;
 
         /// <summary>
-        /// lbl_status control.
+        /// btnSave control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_status;
+        protected global::System.Web.UI.WebControls.Button btnSave;
 
         /// <summary>
-        /// txt_status control.
+        /// btnClear control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_status;
+        protected global::System.Web.UI.WebControls.Button btnClear;
 
         /// <summary>
-        /// lbl_heldUnit control.
+        /// lblCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_heldUnit;
+        protected global::System.Web.UI.WebControls.Label lblCount;
 
         /// <summary>
-        /// txt_heldUnit control.
+        /// gvBookedSeats control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txt_heldUnit;
-
-        /// <summary>
-        /// btn_bookSeat control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btn_bookSeat;
-
-        /// <summary>
-        /// gv_bookedSeats control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gv_bookedSeats;
+        protected global::System.Web.UI.WebControls.GridView gvBookedSeats;
     }
 }
