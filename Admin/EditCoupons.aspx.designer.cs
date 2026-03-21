@@ -24,6 +24,33 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
+        /// lbl_AvatarInitial control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lbl_AvatarInitial;
+
+        /// <summary>
+        /// lblMessage control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblMessage;
+
+        /// <summary>
+        /// txtCouponId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtCouponId;
+
+        /// <summary>
         /// txtCode control.
         /// </summary>
         /// <remarks>
@@ -33,22 +60,22 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.WebControls.TextBox txtCode;
 
         /// <summary>
-        /// rfvCode control.
+        /// rbPercentage control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvCode;
+        protected global::System.Web.UI.WebControls.RadioButton rbPercentage;
 
         /// <summary>
-        /// rblDiscountType control.
+        /// rbFlat control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButtonList rblDiscountType;
+        protected global::System.Web.UI.WebControls.RadioButton rbFlat;
 
         /// <summary>
         /// txtDiscountValue control.
@@ -69,13 +96,13 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.WebControls.TextBox txtMaxDiscount;
 
         /// <summary>
-        /// txtMinOrderValue control.
+        /// txtMinOrder control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtMinOrderValue;
+        protected global::System.Web.UI.WebControls.TextBox txtMinOrder;
 
         /// <summary>
         /// txtValidFrom control.
@@ -114,13 +141,13 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.WebControls.TextBox txtUsedCount;
 
         /// <summary>
-        /// txtCreatedAt control.
+        /// btnInsert control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtCreatedAt;
+        protected global::System.Web.UI.WebControls.Button btnInsert;
 
         /// <summary>
         /// btnSave control.
@@ -132,21 +159,30 @@ namespace EventGlint.Admin
         protected global::System.Web.UI.WebControls.Button btnSave;
 
         /// <summary>
-        /// btnUpdate control.
+        /// btnClear control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnUpdate;
+        protected global::System.Web.UI.WebControls.Button btnClear;
 
         /// <summary>
-        /// GridView1 control.
+        /// lblCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView GridView1;
+        protected global::System.Web.UI.WebControls.Label lblCount;
+
+        /// <summary>
+        /// gvCoupons control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView gvCoupons;
     }
 }

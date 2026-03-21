@@ -12,79 +12,251 @@ namespace EventGlint.Admin
 {
     public partial class EditBookedSeats : System.Web.UI.Page
     {
-        String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        //String connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+
+        // =====================================================================
+        //  Page Load
+        // =====================================================================
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (Session["Username"] == null)
             {
-                bind_grid();
+                Response.Redirect("~/Log.aspx");
+                return;
+            }
+
+            string name = Session["Username"]?.ToString() ?? "A";
+            lbl_AvatarInitial.Text = name.Length > 0 ? name[0].ToString().ToUpper() : "A";
+
+            if (!IsPostBack)
+                LoadGrid();
+        }
+
+        // =====================================================================
+        //  Load GridView
+        // =====================================================================
+        private void LoadGrid()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        "SELECT BookedSeatId, BookingId, SeatId, ShowId, PricePaid, Status, HeldUntil FROM BookedSeats ORDER BY BookedSeatId DESC", con);
+
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    gvBookedSeats.DataSource = dt;
+                    gvBookedSeats.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("❌ Error loading data: " + ex.Message, false);
             }
         }
 
-        public void bind_grid()
+        // =====================================================================
+        //  INSERT
+        // =====================================================================
+        protected void btnInsert_Click(object sender, EventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-            String qry = "select * from BookedSeats";
+            if (!ValidateFields()) return;
 
-            con.Open();
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataSet ds = new DataSet();
-            adpt.Fill(ds);
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        @"INSERT INTO BookedSeats (BookingId, SeatId, ShowId, PricePaid, Status, HeldUntil)
+                          VALUES (@bid, @sid, @shid, @price, @status, @held)", con);
 
-            gv_bookedSeats.DataSource = ds;
-            gv_bookedSeats.DataBind();
-            con.Close();
+                    cmd.Parameters.AddWithValue("@bid", int.Parse(txtBookingId.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@sid", int.Parse(txtSeatId.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@shid", int.Parse(txtShowId.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@price", decimal.Parse(txtPricePaid.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@status", ddlStatus.SelectedValue);
+                    cmd.Parameters.AddWithValue("@held",
+                        string.IsNullOrEmpty(txtHeldUntil.Text) ? (object)DBNull.Value : DateTime.Parse(txtHeldUntil.Text));
 
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
+                ShowMessage("✅ Booked seat inserted successfully!", true);
+                ClearFields();
+                LoadGrid();
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("❌ Error: " + ex.Message, false);
+            }
         }
 
-        protected void gv_bookedSeats_SelectedIndexChanged(object sender, EventArgs e)
+        // =====================================================================
+        //  SAVE (Update)
+        // =====================================================================
+        protected void btnSave_Click(object sender, EventArgs e)
         {
-            GridViewRow row = gv_bookedSeats.SelectedRow;
-            txt_bookedSeatid.Text = row.Cells[1].Text;
-            txt_bookingid.Text = row.Cells[2].Text;
-            txt_seatid.Text = row.Cells[3].Text;
-            txt_showid.Text = row.Cells[4].Text;
-            txt_pricePaid.Text = row.Cells[5].Text;
-            txt_status.Text = row.Cells[6].Text;
-            txt_heldUnit.Text = row.Cells[7].Text;
+            if (string.IsNullOrEmpty(txtBookedSeatId.Text))
+            {
+                ShowMessage("⚠️ Please select a record first using the Edit button.", false);
+                return;
+            }
+            if (!ValidateFields()) return;
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(
+                        @"UPDATE BookedSeats
+                          SET BookingId=@bid, SeatId=@sid, ShowId=@shid,
+                              PricePaid=@price, Status=@status, HeldUntil=@held
+                          WHERE BookedSeatId=@id", con);
+
+                    cmd.Parameters.AddWithValue("@bid", int.Parse(txtBookingId.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@sid", int.Parse(txtSeatId.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@shid", int.Parse(txtShowId.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@price", decimal.Parse(txtPricePaid.Text.Trim()));
+                    cmd.Parameters.AddWithValue("@status", ddlStatus.SelectedValue);
+                    cmd.Parameters.AddWithValue("@held",
+                        string.IsNullOrEmpty(txtHeldUntil.Text) ? (object)DBNull.Value : DateTime.Parse(txtHeldUntil.Text));
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtBookedSeatId.Text.Trim()));
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+                }
+
+                ShowMessage("✅ Booked seat updated successfully!", true);
+                ClearFields();
+                LoadGrid();
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("❌ Error: " + ex.Message, false);
+            }
         }
 
-        protected void gv_bookedSeats_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        // =====================================================================
+        //  CLEAR
+        // =====================================================================
+        protected void btnClear_Click(object sender, EventArgs e)
         {
-            GridViewRow row = gv_bookedSeats.Rows[e.RowIndex];
-            int BookedSeatId = Convert.ToInt32(row.Cells[1].Text);
-
-            String qry = "delete from BookedSeats where BookedSeatId=@BookedSeatId";
-
-            SqlConnection con = new SqlConnection(strcon);
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@BookedSeatId", BookedSeatId);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            bind_grid();
+            ClearFields();
+            lblMessage.Visible = false;
         }
 
-        protected void btn_bookSeat_Click(object sender, EventArgs e)
+        // =====================================================================
+        //  GridView RowCommand
+        // =====================================================================
+        protected void gvBookedSeats_RowCommand(object sender, System.Web.UI.WebControls.GridViewCommandEventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
+            int id = Convert.ToInt32(e.CommandArgument);
 
-            String qry = "insert into BookedSeats(BookedSeatId,BookingId,SeatId,ShowId,PricePaid,Status,HeldUntil)values(@BookedSeatId,@BookingId,@SeatId,@ShowId,@PricePaid,@Status,@HeldUntil)";
+            if (e.CommandName == "SelectRow")
+            {
+                try
+                {
+                    using (SqlConnection con = new SqlConnection(connStr))
+                    {
+                        SqlCommand cmd = new SqlCommand(
+                            "SELECT * FROM BookedSeats WHERE BookedSeatId=@id", con);
+                        cmd.Parameters.AddWithValue("@id", id);
 
-            SqlCommand cmd = new SqlCommand(qry, con);
-            cmd.Parameters.AddWithValue("@BookedSeatId", txt_bookedSeatid.Text);
-            cmd.Parameters.AddWithValue("@BookingId", txt_bookingid.Text);
-            cmd.Parameters.AddWithValue("@SeatId", txt_seatid.Text);
-            cmd.Parameters.AddWithValue("@ShowId", txt_showid.Text);
-            cmd.Parameters.AddWithValue("@PricePaid", txt_pricePaid.Text);
-            cmd.Parameters.AddWithValue("@Status", txt_status.Text);
-            cmd.Parameters.AddWithValue("@HeldUntil", txt_heldUnit.Text);
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
 
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("<script>alert('Record inserted...!');</script>");
-            con.Close();
+                        if (dt.Rows.Count > 0)
+                        {
+                            DataRow row = dt.Rows[0];
+                            txtBookedSeatId.Text = row["BookedSeatId"].ToString();
+                            txtBookingId.Text = row["BookingId"].ToString();
+                            txtSeatId.Text = row["SeatId"].ToString();
+                            txtShowId.Text = row["ShowId"].ToString();
+                            txtPricePaid.Text = row["PricePaid"].ToString();
+                            ddlStatus.SelectedValue = row["Status"].ToString();
+                            txtHeldUntil.Text = row["HeldUntil"] == DBNull.Value ? "" :
+                                Convert.ToDateTime(row["HeldUntil"]).ToString("yyyy-MM-ddTHH:mm");
+                            lblMessage.Visible = false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage("❌ Error: " + ex.Message, false);
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                try
+                {
+                    using (SqlConnection con = new SqlConnection(connStr))
+                    {
+                        SqlCommand cmd = new SqlCommand(
+                            "DELETE FROM BookedSeats WHERE BookedSeatId=@id", con);
+                        cmd.Parameters.AddWithValue("@id", id);
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    ShowMessage("🗑️ Record deleted successfully!", true);
+                    ClearFields();
+                    LoadGrid();
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage("❌ Error: " + ex.Message, false);
+                }
+            }
+        }
+
+        // =====================================================================
+        //  Helpers
+        // =====================================================================
+        private void ClearFields()
+        {
+            txtBookedSeatId.Text = txtBookingId.Text = txtSeatId.Text =
+            txtShowId.Text = txtPricePaid.Text = txtHeldUntil.Text = "";
+            ddlStatus.SelectedIndex = 0;
+        }
+
+        private bool ValidateFields()
+        {
+            if (string.IsNullOrEmpty(txtBookingId.Text.Trim()))
+            { ShowMessage("⚠️ Booking ID is required.", false); return false; }
+            if (string.IsNullOrEmpty(txtSeatId.Text.Trim()))
+            { ShowMessage("⚠️ Seat ID is required.", false); return false; }
+            if (string.IsNullOrEmpty(txtShowId.Text.Trim()))
+            { ShowMessage("⚠️ Show ID is required.", false); return false; }
+            if (string.IsNullOrEmpty(txtPricePaid.Text.Trim()))
+            { ShowMessage("⚠️ Price Paid is required.", false); return false; }
+            if (string.IsNullOrEmpty(ddlStatus.SelectedValue))
+            { ShowMessage("⚠️ Please select a Status.", false); return false; }
+            return true;
+        }
+
+        private void ShowMessage(string msg, bool success)
+        {
+            lblMessage.Text = msg;
+            lblMessage.CssClass = success ? "alert msg-success" : "alert msg-error";
+            lblMessage.Visible = true;
+        }
+
+        public string GetStatusBadge(string status)
+        {
+            switch (status)
+            {
+                case "Confirmed": return "s-confirmed";
+                case "Held": return "s-held";
+                case "Released": return "s-released";
+                default: return "s-held";
+            }
         }
     }
 }

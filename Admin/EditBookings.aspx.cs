@@ -1,147 +1,222 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
     public partial class EditBookings : System.Web.UI.Page
     {
-        SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString);
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
-            {
-
-                LoadGrid();
-            }
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            string name = Session["Username"]?.ToString() ?? "A";
+            lbl_AvatarInitial.Text = name.Length > 0 ? name[0].ToString().ToUpper() : "A";
+            if (!IsPostBack) { BindDropdowns(); LoadGrid(); }
         }
-        void LoadGrid()
+
+        // ── Bind all dropdowns ─────────────────────────────────────────────
+        private void BindDropdowns()
         {
-            SqlDataAdapter da = new SqlDataAdapter("select * from Bookings", con);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            GridView11.DataSource = dt;
-            GridView11.DataBind();
+            // Users
+            BindDdl(ddlUserId,
+                "SELECT UserId, Username + ' (ID:' + CAST(UserId AS NVARCHAR) + ')' AS Label FROM Users ORDER BY Username",
+                "UserId", "Label", "-- Select User --");
+
+            // Shows — Event title + date + time
+            BindDdl(ddlShowId,
+                @"SELECT sh.ShowId,
+                    e.Title + ' | ' + CONVERT(NVARCHAR,sh.ShowDate,106) + ' ' + CONVERT(NVARCHAR,sh.StartTime,108) AS Label
+                  FROM Shows sh JOIN Events e ON e.EventId=sh.EventId
+                  ORDER BY sh.ShowDate DESC",
+                "ShowId", "Label", "-- Select Show --");
+
+            // Coupons — optional
+            BindDdl(ddlCouponId,
+                "SELECT CouponId, Code + ' (' + DiscountType + ' ' + CAST(DiscountValue AS NVARCHAR) + ')' AS Label FROM Coupons WHERE IsActive=1 ORDER BY Code",
+                "CouponId", "Label", "-- No Coupon --");
         }
 
-        //// SHOW DROPDOWN 
-        //void BindShow()
-        //{
-        //    SqlCommand cmd = new SqlCommand("select ShowId, ShowName from Shows", con);
-        //    SqlDataAdapter da = new SqlDataAdapter(cmd);
-        //    DataTable dt = new DataTable();
-        //    da.Fill(dt);
+        private void BindDdl(DropDownList ddl, string sql, string val, string text, string def)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(sql, con);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+                    ddl.DataSource = dt;
+                    ddl.DataValueField = val;
+                    ddl.DataTextField = text;
+                    ddl.DataBind();
+                    ddl.Items.Insert(0, new ListItem(def, ""));
+                }
+            }
+            catch { ddl.Items.Insert(0, new ListItem("-- Error loading --", "")); }
+        }
 
-        //    ddlShowId.DataSource = dt;
-        //    ddlShowId.DataTextField = "ShowName";
-        //    ddlShowId.DataValueField = "ShowId";
-        //    ddlShowId.DataBind();
+        // ── Load Grid ──────────────────────────────────────────────────────
+        private void LoadGrid()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(@"
+                        SELECT b.BookingId, u.Username AS UserName,
+                               e.Title + ' ' + CONVERT(NVARCHAR,sh.ShowDate,106) AS ShowLabel,
+                               b.BookingDate, b.FinalAmount, b.BookingRef, b.Status
+                        FROM Bookings b
+                        JOIN Users u  ON u.UserId  = b.UserId
+                        JOIN Shows sh ON sh.ShowId = b.ShowId
+                        JOIN Events e ON e.EventId = sh.EventId
+                        ORDER BY b.BookingId DESC", con);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+                    gvBookings.DataSource = dt;
+                    gvBookings.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
 
-        //    ddlShowId.Items.Insert(0, "Select Show");
-        //}
-
-        //// COUPON DROPDOWN
-        //void BindCoupon()
-        //{
-        //    SqlCommand cmd = new SqlCommand("select CouponId, CouponName from Coupons", con);
-        //    SqlDataAdapter da = new SqlDataAdapter(cmd);
-        //    DataTable dt = new DataTable();
-        //    da.Fill(dt);
-
-        //    ddlCouponId.DataSource = dt;
-        //    ddlCouponId.DataTextField = "CouponName";
-        //    ddlCouponId.DataValueField = "CouponId";
-        //    ddlCouponId.DataBind();
-
-        //    ddlCouponId.Items.Insert(0, "Select Coupon");
-        //}
-
-        // INSERT
+        // ── INSERT ─────────────────────────────────────────────────────────
         protected void btnInsert_Click(object sender, EventArgs e)
         {
-            SqlCommand cmd = new SqlCommand("insert into Bookings values(@UserId,@ShowId,@BookingDate,@TotalAmount,@DiscountAmount,@FinalAmount,@Status,@BookingRef,@CouponId)", con);
-
-            cmd.Parameters.AddWithValue("@UserId", txtUserId.Text);
-            cmd.Parameters.AddWithValue("@ShowId", ddlShowId.SelectedValue);
-            cmd.Parameters.AddWithValue("@BookingDate", txtBookingDate.Text);
-            cmd.Parameters.AddWithValue("@TotalAmount", txtTotalAmount.Text);
-            cmd.Parameters.AddWithValue("@DiscountAmount", txtDiscountAmount.Text);
-            cmd.Parameters.AddWithValue("@FinalAmount", txtFinalAmount.Text);
-            cmd.Parameters.AddWithValue("@Status", rblStatus.SelectedValue);
-            cmd.Parameters.AddWithValue("@BookingRef", txtBookingRef.Text);
-            cmd.Parameters.AddWithValue("@CouponId", ddlCouponId.SelectedValue);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("inserted successfully!");
-            con.Close();
-
-            LoadGrid();
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"
+                        INSERT INTO Bookings (UserId,ShowId,BookingDate,TotalAmount,DiscountAmount,FinalAmount,Status,BookingRef,CouponId)
+                        VALUES (@uid,@sid,@bd,@ta,@da,@fa,@st,@ref,@cid)", con);
+                    SetParams(cmd);
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Booking inserted!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
 
-
-        // GRIDVIEW SELECT
-        protected void GridView11_SelectedIndexChanged(object sender, EventArgs e)
+        // ── SAVE ───────────────────────────────────────────────────────────
+        protected void btnSave_Click(object sender, EventArgs e)
         {
-            txtBookingId.Text = GridView11.SelectedRow.Cells[1].Text;
-            txtUserId.Text = GridView11.SelectedRow.Cells[2].Text;
-            ddlShowId.SelectedValue = GridView11.SelectedRow.Cells[3].Text;
-            txtBookingDate.Text = GridView11.SelectedRow.Cells[4].Text;
-            txtTotalAmount.Text = GridView11.SelectedRow.Cells[5].Text;
-            txtDiscountAmount.Text = GridView11.SelectedRow.Cells[6].Text;
-            txtFinalAmount.Text = GridView11.SelectedRow.Cells[7].Text;
-            rblStatus.SelectedValue = GridView11.SelectedRow.Cells[8].Text;
-            txtBookingRef.Text = GridView11.SelectedRow.Cells[9].Text;
-            ddlCouponId.SelectedValue = GridView11.SelectedRow.Cells[10].Text;
+            if (string.IsNullOrEmpty(txtBookingId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"
+                        UPDATE Bookings SET UserId=@uid,ShowId=@sid,BookingDate=@bd,
+                        TotalAmount=@ta,DiscountAmount=@da,FinalAmount=@fa,
+                        Status=@st,BookingRef=@ref,CouponId=@cid
+                        WHERE BookingId=@id", con);
+                    SetParams(cmd);
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtBookingId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Booking updated!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
 
-        // UPDATE
-        protected void btnUpdate_Click(object sender, EventArgs e)
+        private void SetParams(SqlCommand cmd)
         {
-            SqlCommand cmd = new SqlCommand("update Bookings set UserId=@UserId,ShowId=@ShowId,BookingDate=@BookingDate,TotalAmount=@TotalAmount,DiscountAmount=@DiscountAmount,FinalAmount=@FinalAmount,Status=@Status,BookingRef=@BookingRef,CouponId=@CouponId where BookingId=@BookingId", con);
-
-            cmd.Parameters.AddWithValue("@BookingId", txtBookingId.Text);
-            cmd.Parameters.AddWithValue("@UserId", txtUserId.Text);
-            cmd.Parameters.AddWithValue("@ShowId", ddlShowId.SelectedValue);
-            cmd.Parameters.AddWithValue("@BookingDate", txtBookingDate.Text);
-            cmd.Parameters.AddWithValue("@TotalAmount", txtTotalAmount.Text);
-            cmd.Parameters.AddWithValue("@DiscountAmount", txtDiscountAmount.Text);
-            cmd.Parameters.AddWithValue("@FinalAmount", txtFinalAmount.Text);
-            cmd.Parameters.AddWithValue("@Status", rblStatus.SelectedValue);
-            cmd.Parameters.AddWithValue("@BookingRef", txtBookingRef.Text);
-            cmd.Parameters.AddWithValue("@CouponId", ddlCouponId.SelectedValue);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("updated successfully!");
-
-            con.Close();
-
-            LoadGrid();
+            cmd.Parameters.AddWithValue("@uid", int.Parse(ddlUserId.SelectedValue));
+            cmd.Parameters.AddWithValue("@sid", int.Parse(ddlShowId.SelectedValue));
+            cmd.Parameters.AddWithValue("@bd", DateTime.Parse(txtBookingDate.Text));
+            cmd.Parameters.AddWithValue("@ta", decimal.Parse(txtTotalAmount.Text));
+            cmd.Parameters.AddWithValue("@da", string.IsNullOrEmpty(txtDiscountAmount.Text) ? 0 : decimal.Parse(txtDiscountAmount.Text));
+            cmd.Parameters.AddWithValue("@fa", decimal.Parse(txtFinalAmount.Text));
+            cmd.Parameters.AddWithValue("@st", rblStatus.SelectedValue);
+            cmd.Parameters.AddWithValue("@ref", txtBookingRef.Text.Trim());
+            cmd.Parameters.AddWithValue("@cid", string.IsNullOrEmpty(ddlCouponId.SelectedValue) ? (object)DBNull.Value : int.Parse(ddlCouponId.SelectedValue));
         }
 
-        // DELETE
-        protected void GridView11_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+
+        // ── GridView ───────────────────────────────────────────────────────
+        protected void gvBookings_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            int id = Convert.ToInt32(GridView11.DataKeys[e.RowIndex].Value);
-
-            SqlCommand cmd = new SqlCommand("delete from Bookings where BookingId=@BookingId", con);
-            cmd.Parameters.AddWithValue("@BookingId", id);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-
-            LoadGrid();
-            Response.Write("deleted successfully!");
-
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Bookings WHERE BookingId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtBookingId.Text = r["BookingId"].ToString();
+                        ddlUserId.SelectedValue = r["UserId"].ToString();
+                        ddlShowId.SelectedValue = r["ShowId"].ToString();
+                        txtBookingDate.Text = Convert.ToDateTime(r["BookingDate"]).ToString("yyyy-MM-dd");
+                        txtTotalAmount.Text = r["TotalAmount"].ToString();
+                        txtDiscountAmount.Text = r["DiscountAmount"].ToString();
+                        txtFinalAmount.Text = r["FinalAmount"].ToString();
+                        rblStatus.SelectedValue = r["Status"].ToString();
+                        txtBookingRef.Text = r["BookingRef"].ToString();
+                        if (r["CouponId"] != DBNull.Value) ddlCouponId.SelectedValue = r["CouponId"].ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("DELETE FROM Bookings WHERE BookingId=@id", con);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("🗑️ Booking deleted!", true); ClearFields(); LoadGrid();
+            }
         }
 
+        private void ClearFields()
+        {
+            txtBookingId.Text = txtBookingDate.Text = txtTotalAmount.Text =
+            txtDiscountAmount.Text = txtFinalAmount.Text = txtBookingRef.Text = "";
+            ddlUserId.SelectedIndex = ddlShowId.SelectedIndex = ddlCouponId.SelectedIndex = 0;
+            rblStatus.SelectedIndex = 1;
+        }
+
+        private bool Validate()
+        {
+            if (string.IsNullOrEmpty(ddlUserId.SelectedValue)) { ShowMessage("⚠️ Select a User.", false); return false; }
+            if (string.IsNullOrEmpty(ddlShowId.SelectedValue)) { ShowMessage("⚠️ Select a Show.", false); return false; }
+            if (string.IsNullOrEmpty(txtBookingDate.Text)) { ShowMessage("⚠️ Enter Booking Date.", false); return false; }
+            if (string.IsNullOrEmpty(txtTotalAmount.Text)) { ShowMessage("⚠️ Enter Total Amount.", false); return false; }
+            if (string.IsNullOrEmpty(txtFinalAmount.Text)) { ShowMessage("⚠️ Enter Final Amount.", false); return false; }
+            return true;
+        }
+
+        private void ShowMessage(string msg, bool success)
+        {
+            lblMessage.Text = msg;
+            lblMessage.CssClass = success ? "alert msg-success" : "alert msg-error";
+            lblMessage.Visible = true;
+        }
+
+        public string GetStatusBadge(string s)
+        {
+            switch (s)
+            {
+                case "Confirmed": return "s-confirmed";
+                case "Pending": return "s-pending";
+                case "Cancelled": return "s-cancelled";
+                case "Refunded": return "s-refunded";
+                default: return "s-pending";
+            }
+        }
     }
 }

@@ -1,171 +1,137 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
-    public partial class SeatCategories : System.Web.UI.Page
+    public partial class EditSeatCategories : System.Web.UI.Page
     {
-        String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
-            {
-                Bind_Grid();
-                BindHallDDL();
-            }
-
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            lbl_AvatarInitial.Text = (Session["Username"]?.ToString() ?? "A")[0].ToString().ToUpper();
+            if (!IsPostBack) { BindHalls(); LoadGrid(); }
         }
 
-        protected void btn_Insert_Click(object sender, EventArgs e)
+        private void BindHalls()
         {
-            String selectedtype = string.Empty;
-            if (rbt_gold.Checked)
+            try
             {
-                selectedtype = rbt_gold.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(
+                        "SELECT h.HallId, v.Name + ' - ' + h.Name AS Label FROM Halls h JOIN Venues v ON v.VenueId=h.VenueId ORDER BY v.Name, h.Name", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    ddlHallId.DataSource = dt; ddlHallId.DataValueField = "HallId"; ddlHallId.DataTextField = "Label"; ddlHallId.DataBind();
+                    ddlHallId.Items.Insert(0, new ListItem("-- Select Hall --", ""));
+                }
             }
-            else if (rbt_silver.Checked)
-            {
-                selectedtype = rbt_silver.Text;
-            }
-            else
-            {
-                selectedtype = rbt_platinum.Text;
-            }
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "INSERT INTO SeatCategories(HallId,Name,Price) VALUES(@id,@name,@price)";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@id", ddl_Hall.SelectedValue);
-            cmd.Parameters.AddWithValue("@name", selectedtype);
-            cmd.Parameters.AddWithValue("@price", txt_price.Text);
-            
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-
-            Response.Write("<script>alert('Record Inserted..');</script>");
-
-            Bind_Grid();
+            catch { ddlHallId.Items.Insert(0, new ListItem("-- Error --", "")); }
         }
 
-        protected void btn_Update_Click(object sender, EventArgs e)
+        private void LoadGrid()
         {
-            String selectedtype = string.Empty;
-            if (rbt_gold.Checked)
+            try
             {
-                selectedtype = rbt_gold.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter(@"SELECT sc.CategoryId, v.Name + ' - ' + h.Name AS HallName, sc.Name, sc.Price, sc.ColorCode
+                        FROM SeatCategories sc JOIN Halls h ON h.HallId=sc.HallId JOIN Venues v ON v.VenueId=h.VenueId ORDER BY sc.CategoryId DESC", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    gvData.DataSource = dt; gvData.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
             }
-            else if (rbt_silver.Checked)
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        private string GetCatName() { if (rbSilver.Checked) return "Silver"; if (rbGold.Checked) return "Gold"; if (rbPlatinum.Checked) return "Platinum"; return ""; }
+        private void SetCatName(string n) { rbSilver.Checked = n == "Silver"; rbGold.Checked = n == "Gold"; rbPlatinum.Checked = n == "Platinum"; }
+
+        protected void btnInsert_Click(object sender, EventArgs e)
+        {
+            if (!Validate()) return;
+            try
             {
-                selectedtype = rbt_silver.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("INSERT INTO SeatCategories(HallId,Name,Price,ColorCode) VALUES(@hid,@n,@p,@cc)", con);
+                    cmd.Parameters.AddWithValue("@hid", int.Parse(ddlHallId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@n", GetCatName());
+                    cmd.Parameters.AddWithValue("@p", decimal.Parse(txtPrice.Text));
+                    cmd.Parameters.AddWithValue("@cc", txtColorCode.Text.Trim());
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Category inserted!", true); ClearFields(); LoadGrid();
             }
-            else
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        protected void btnSave_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtCategoryId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
             {
-                selectedtype = rbt_platinum.Text;
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("UPDATE SeatCategories SET HallId=@hid,Name=@n,Price=@p,ColorCode=@cc WHERE CategoryId=@id", con);
+                    cmd.Parameters.AddWithValue("@hid", int.Parse(ddlHallId.SelectedValue));
+                    cmd.Parameters.AddWithValue("@n", GetCatName());
+                    cmd.Parameters.AddWithValue("@p", decimal.Parse(txtPrice.Text));
+                    cmd.Parameters.AddWithValue("@cc", txtColorCode.Text.Trim());
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtCategoryId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Category updated!", true); ClearFields(); LoadGrid();
             }
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "UPDATE SeatCategories SET HallId=@id, Name=@name, Price=@price WHERE CategoryId=@c_id";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            int catId = Convert.ToInt32(gv_Category.DataKeys[gv_Category.SelectedIndex].Value);
-
-            cmd.Parameters.AddWithValue("@c_id", catId);
-            cmd.Parameters.AddWithValue("@id", ddl_Hall.SelectedValue);
-            cmd.Parameters.AddWithValue("@name", selectedtype);
-            cmd.Parameters.AddWithValue("@price", txt_price.Text);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-
-            Response.Write("<script>alert('Record Updated');</script>");
-            Bind_Grid();
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
         }
-        protected void Bind_Grid()
+
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+
+        protected void gvData_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = @"SELECT sc.CategoryId,
-               sc.HallId,
-               h.Name AS HallName,
-               sc.Name AS SeatCategory,
-               sc.Price 
-        FROM SeatCategories sc
-        INNER JOIN Halls h ON sc.HallId = h.HallId";
-
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataSet ds = new DataSet();
-            adpt.Fill(ds);
-
-            gv_Category.DataSource = ds;
-            gv_Category.DataBind();
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM SeatCategories WHERE CategoryId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtCategoryId.Text = r["CategoryId"].ToString();
+                        ddlHallId.SelectedValue = r["HallId"].ToString();
+                        SetCatName(r["Name"].ToString());
+                        txtPrice.Text = r["Price"].ToString();
+                        txtColorCode.Text = r["ColorCode"]?.ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                { SqlCommand cmd = new SqlCommand("DELETE FROM SeatCategories WHERE CategoryId=@id", con); cmd.Parameters.AddWithValue("@id", id); con.Open(); cmd.ExecuteNonQuery(); }
+                ShowMessage("🗑️ Category deleted!", true); ClearFields(); LoadGrid();
+            }
         }
 
-
-        protected void gv_Category_SelectedIndexChanged(object sender, EventArgs e)
+        private void ClearFields() { txtCategoryId.Text = txtPrice.Text = txtColorCode.Text = ""; ddlHallId.SelectedIndex = 0; rbSilver.Checked = rbGold.Checked = rbPlatinum.Checked = false; }
+        private bool Validate()
         {
-            GridViewRow row = gv_Category.SelectedRow;
-
-            int hallId = Convert.ToInt32(gv_Category.DataKeys[gv_Category.SelectedIndex].Values["HallId"]);
-            ddl_Hall.SelectedValue = hallId.ToString();
-
-            string cat = row.Cells[4].Text;
-
-            if (cat == "Silver") rbt_silver.Checked = true;
-            else if (cat == "Gold") rbt_gold.Checked = true;
-            else if (cat == "Platinum") rbt_platinum.Checked = true;
-
-            txt_price.Text = row.Cells[5].Text;
+            if (string.IsNullOrEmpty(ddlHallId.SelectedValue)) { ShowMessage("⚠️ Select Hall.", false); return false; }
+            if (string.IsNullOrEmpty(GetCatName())) { ShowMessage("⚠️ Select Category Name.", false); return false; }
+            if (string.IsNullOrEmpty(txtPrice.Text.Trim())) { ShowMessage("⚠️ Price required.", false); return false; }
+            return true;
         }
-        protected void gv_Category_RowDeleting(object sender, GridViewDeleteEventArgs e)
-        {
-            GridViewRow row = gv_Category.Rows[e.RowIndex];
-            //int CategoryId = Convert.ToInt32(row.Cells[1].Text);
-            int CategoryId = Convert.ToInt32(gv_Category.DataKeys[e.RowIndex].Value);
-
-
-            string qry = "DELETE FROM SeatCategories WHERE CategoryId = @CategoryId";
-
-            SqlConnection con = new SqlConnection(strcon);
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@CategoryId", CategoryId);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            Bind_Grid();
-        }
-
-        protected void BindHallDDL()
-        {
-            SqlConnection con = new SqlConnection(strcon);
-
-            string qry = "SELECT HallId, Name FROM Halls";
-
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataTable dt = new DataTable();
-            adpt.Fill(dt);
-
-            ddl_Hall.DataSource = dt;
-            ddl_Hall.DataTextField = "Name";
-            ddl_Hall.DataValueField = "HallId";
-            ddl_Hall.DataBind();
-
-            ddl_Hall.Items.Insert(0, new ListItem("Select Hall", "0"));
-        }
-
+        private void ShowMessage(string msg, bool ok) { lblMessage.Text = msg; lblMessage.CssClass = ok ? "alert msg-success" : "alert msg-error"; lblMessage.Visible = true; }
     }
 }

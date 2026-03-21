@@ -1,98 +1,156 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
-using System.Web.UI;
+using System.Configuration;
 using System.Web.UI.WebControls;
 
 namespace EventGlint.Admin
 {
     public partial class EditEvents : System.Web.UI.Page
     {
-        String strcon = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+        private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (Session["Username"] == null) { Response.Redirect("~/Log.aspx"); return; }
+            lbl_AvatarInitial.Text = (Session["Username"]?.ToString() ?? "A")[0].ToString().ToUpper();
+            if (!IsPostBack) { BindDropdowns(); LoadGrid(); }
+        }
+
+        private void BindDropdowns()
+        {
+            try
             {
-                bind_grid();
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT AdminId, Username FROM Admins ORDER BY Username", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    ddlCreatedBy.DataSource = dt;
+                    ddlCreatedBy.DataValueField = "AdminId";
+                    ddlCreatedBy.DataTextField = "Username";
+                    ddlCreatedBy.DataBind();
+                    ddlCreatedBy.Items.Insert(0, new ListItem("-- Select Admin --", ""));
+                }
+            }
+            catch { ddlCreatedBy.Items.Insert(0, new ListItem("-- Error --", "")); }
+        }
+
+        private void LoadGrid()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT EventId,Title,EventType,Language,DurationMins,ReleaseDate FROM Events ORDER BY EventId DESC", con);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    gvEvents.DataSource = dt; gvEvents.DataBind();
+                    lblCount.Text = dt.Rows.Count + " record(s)";
+                }
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        protected void btnInsert_Click(object sender, EventArgs e)
+        {
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"INSERT INTO Events(Title,EventType,Description,DurationMins,Language,Genre,ReleaseDate,EndDate,CreatedAt,CreatedBy)
+                        VALUES(@t,@et,@d,@dm,@l,@g,@rd,@ed,GETDATE(),@cb)", con);
+                    SetParams(cmd);
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Event inserted!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        protected void btnSave_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtEventId.Text)) { ShowMessage("⚠️ Select a record first.", false); return; }
+            if (!Validate()) return;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand(@"UPDATE Events SET Title=@t,EventType=@et,Description=@d,DurationMins=@dm,
+                        Language=@l,Genre=@g,ReleaseDate=@rd,EndDate=@ed,CreatedBy=@cb WHERE EventId=@id", con);
+                    SetParams(cmd);
+                    cmd.Parameters.AddWithValue("@id", int.Parse(txtEventId.Text));
+                    con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("✅ Event updated!", true); ClearFields(); LoadGrid();
+            }
+            catch (Exception ex) { ShowMessage("❌ " + ex.Message, false); }
+        }
+
+        private void SetParams(SqlCommand cmd)
+        {
+            cmd.Parameters.AddWithValue("@t", txtTitle.Text.Trim());
+            cmd.Parameters.AddWithValue("@et", ddlEventType.SelectedValue);
+            cmd.Parameters.AddWithValue("@d", txtDescription.Text.Trim());
+            cmd.Parameters.AddWithValue("@dm", string.IsNullOrEmpty(txtDuration.Text) ? (object)DBNull.Value : int.Parse(txtDuration.Text));
+            cmd.Parameters.AddWithValue("@l", txtLanguage.Text.Trim());
+            cmd.Parameters.AddWithValue("@g", txtGenre.Text.Trim());
+            cmd.Parameters.AddWithValue("@rd", string.IsNullOrEmpty(txtReleaseDate.Text) ? (object)DBNull.Value : DateTime.Parse(txtReleaseDate.Text));
+            cmd.Parameters.AddWithValue("@ed", string.IsNullOrEmpty(txtEndDate.Text) ? (object)DBNull.Value : DateTime.Parse(txtEndDate.Text));
+            cmd.Parameters.AddWithValue("@cb", string.IsNullOrEmpty(ddlCreatedBy.SelectedValue) ? (object)DBNull.Value : int.Parse(ddlCreatedBy.SelectedValue));
+        }
+
+        protected void btnClear_Click(object sender, EventArgs e) { ClearFields(); lblMessage.Visible = false; }
+
+        protected void gvEvents_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            int id = Convert.ToInt32(e.CommandArgument);
+            if (e.CommandName == "SelectRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Events WHERE EventId=@id", con);
+                    da.SelectCommand.Parameters.AddWithValue("@id", id);
+                    DataTable dt = new DataTable(); da.Fill(dt);
+                    if (dt.Rows.Count > 0)
+                    {
+                        DataRow r = dt.Rows[0];
+                        txtEventId.Text = r["EventId"].ToString();
+                        txtTitle.Text = r["Title"].ToString();
+                        ddlEventType.SelectedValue = r["EventType"].ToString();
+                        txtDescription.Text = r["Description"].ToString();
+                        txtDuration.Text = r["DurationMins"].ToString();
+                        txtLanguage.Text = r["Language"].ToString();
+                        txtGenre.Text = r["Genre"].ToString();
+                        if (r["ReleaseDate"] != DBNull.Value) txtReleaseDate.Text = Convert.ToDateTime(r["ReleaseDate"]).ToString("yyyy-MM-dd");
+                        if (r["EndDate"] != DBNull.Value) txtEndDate.Text = Convert.ToDateTime(r["EndDate"]).ToString("yyyy-MM-dd");
+                        if (r["CreatedBy"] != DBNull.Value) ddlCreatedBy.SelectedValue = r["CreatedBy"].ToString();
+                        lblMessage.Visible = false;
+                    }
+                }
+            }
+            else if (e.CommandName == "DeleteRow")
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    SqlCommand cmd = new SqlCommand("DELETE FROM Events WHERE EventId=@id", con);
+                    cmd.Parameters.AddWithValue("@id", id); con.Open(); cmd.ExecuteNonQuery();
+                }
+                ShowMessage("🗑️ Event deleted!", true); ClearFields(); LoadGrid();
             }
         }
 
-        public void bind_grid()
+        private void ClearFields()
         {
-            SqlConnection con = new SqlConnection(strcon);
-            String qry = "select * from Events";
-
-            con.Open();
-            SqlDataAdapter adpt = new SqlDataAdapter(qry, con);
-            DataSet ds = new DataSet();
-            adpt.Fill(ds);
-
-            gv_event.DataSource = ds;
-            gv_event.DataBind();
-            con.Close();
+            txtEventId.Text = txtTitle.Text = txtDescription.Text = txtDuration.Text =
+            txtLanguage.Text = txtGenre.Text = txtReleaseDate.Text = txtEndDate.Text = "";
+            ddlEventType.SelectedIndex = 0; ddlCreatedBy.SelectedIndex = 0;
         }
-        protected void gv_event_SelectedIndexChanged(object sender, EventArgs e)
+        private bool Validate()
         {
-            GridViewRow row = gv_event.SelectedRow;
-            txt_eventId.Text = row.Cells[1].Text;
-            txt_title.Text = row.Cells[2].Text;
-            txt_eventType.Text = row.Cells[3].Text;
-            txt_description.Text = row.Cells[4].Text;
-            txt_durationMins.Text = row.Cells[5].Text;
-            txt_language.Text = row.Cells[6].Text;
-            txt_genre.Text = row.Cells[7].Text;
-            txt_releaseDate.Text = row.Cells[8].Text;
-            txt_endDate.Text = row.Cells[9].Text;
-            txt_createdAt.Text = row.Cells[10].Text;
-            txt_createdBy.Text = row.Cells[11].Text;
+            if (string.IsNullOrEmpty(txtTitle.Text.Trim())) { ShowMessage("⚠️ Title required.", false); return false; }
+            if (string.IsNullOrEmpty(ddlEventType.SelectedValue)) { ShowMessage("⚠️ Event Type required.", false); return false; }
+            return true;
         }
-
-        protected void gv_event_RowDeleting(object sender, GridViewDeleteEventArgs e)
-        {
-            GridViewRow row = gv_event.Rows[e.RowIndex];
-            int EventId = Convert.ToInt32(row.Cells[1].Text);
-
-            String qry = "delete from Events where EventId=@EventId";
-
-            SqlConnection con = new SqlConnection(strcon);
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@EventId", EventId);
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
-            bind_grid();
-        }
-
-        protected void btn_bookEvent_Click(object sender, EventArgs e)
-        {
-            SqlConnection con = new SqlConnection(strcon);
-
-            String qry = "insert into Events(EventId,Title,EventType,Description,DurationMins,Language,Genre,ReleaseDate,EndDate,CreatedAt,CreatedBy)values(@EventId,@Title,@EventType,@Description,@DurationMins,@Language,@Genre,@ReleaseDate,@EndDate,@CreatedAt,@CreatedBy)";
-
-            SqlCommand cmd = new SqlCommand(qry, con);
-
-            cmd.Parameters.AddWithValue("@EventId", txt_eventId.Text);
-            cmd.Parameters.AddWithValue("@Title", txt_title.Text);
-            cmd.Parameters.AddWithValue("@EventType", txt_eventType.Text);
-            cmd.Parameters.AddWithValue("@Description", txt_description.Text);
-            cmd.Parameters.AddWithValue("@DurationMins", txt_durationMins.Text);
-            cmd.Parameters.AddWithValue("@Language", txt_language.Text);
-            cmd.Parameters.AddWithValue("@Genre", txt_genre.Text);
-            cmd.Parameters.AddWithValue("@ReleaseDate", txt_releaseDate.Text);
-            cmd.Parameters.AddWithValue("@EndDate", txt_endDate.Text);
-            cmd.Parameters.AddWithValue("@CreatedAt", txt_createdAt.Text);
-            cmd.Parameters.AddWithValue("@CreatedBy", txt_createdBy.Text);
-
-            con.Open();
-            cmd.ExecuteNonQuery();
-            Response.Write("<script>alert('Record inserted...!');</script>");
-            con.Close();
-
-        }
+        private void ShowMessage(string msg, bool ok) { lblMessage.Text = msg; lblMessage.CssClass = ok ? "alert msg-success" : "alert msg-error"; lblMessage.Visible = true; }
     }
 }
