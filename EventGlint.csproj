@@ -135,7 +135,6 @@
     <Content Include="Dashboard.aspx" />
     <Content Include="Event.aspx" />
     <Content Include="favicon.ico" />
-    <Content Include="Home.aspx" />
     <Content Include="Log.aspx" />
     <Content Include="Log.css" />
     <Content Include="reg.aspx" />
@@ -330,13 +329,6 @@
     </Compile>
     <Compile Include="Event.aspx.designer.cs">
       <DependentUpon>Event.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Home.aspx.cs">
-      <DependentUpon>Home.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Home.aspx.designer.cs">
-      <DependentUpon>Home.aspx</DependentUpon>
     </Compile>
     <Compile Include="Log.aspx.cs">
       <DependentUpon>Log.aspx</DependentUpon>
