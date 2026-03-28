@@ -114,6 +114,8 @@
     <Content Include="Admin\EditUsers.aspx" />
     <Content Include="Admin\EditVenue.aspx" />
     <Content Include="Admin\EditSeatCategories.aspx" />
+    <Content Include="BookingConfirm.aspx" />
+    <Content Include="BookTicket.aspx" />
     <Content Include="ContactUs.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
@@ -310,6 +312,20 @@
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="BookingConfirm.aspx.cs">
+      <DependentUpon>BookingConfirm.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BookingConfirm.aspx.designer.cs">
+      <DependentUpon>BookingConfirm.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="BookTicket.aspx.cs">
+      <DependentUpon>BookTicket.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="BookTicket.aspx.designer.cs">
+      <DependentUpon>BookTicket.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ContactUs.aspx.cs">
       <DependentUpon>ContactUs.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
