@@ -11,7 +11,7 @@ namespace EventGlint
 {
 
 
-    public partial class Event
+    public partial class Bookings
     {
 
         /// <summary>
@@ -87,219 +87,174 @@ namespace EventGlint
         protected global::System.Web.UI.WebControls.Label lblTopAvatar;
 
         /// <summary>
-        /// lblTotalCount control.
+        /// lblTotalBookings control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalCount;
+        protected global::System.Web.UI.WebControls.Label lblTotalBookings;
 
         /// <summary>
-        /// lblWeekCount control.
+        /// lblUpcoming control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblWeekCount;
+        protected global::System.Web.UI.WebControls.Label lblUpcoming;
 
         /// <summary>
-        /// lblFreeCount control.
+        /// lblTotalSpent control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblFreeCount;
+        protected global::System.Web.UI.WebControls.Label lblTotalSpent;
 
         /// <summary>
-        /// chipAll control.
+        /// lblStatTotal control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipAll;
+        protected global::System.Web.UI.WebControls.Label lblStatTotal;
 
         /// <summary>
-        /// chipFilm control.
+        /// lblStatUpcoming control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipFilm;
+        protected global::System.Web.UI.WebControls.Label lblStatUpcoming;
 
         /// <summary>
-        /// chipArts control.
+        /// lblStatAttended control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipArts;
+        protected global::System.Web.UI.WebControls.Label lblStatAttended;
 
         /// <summary>
-        /// chipComedy control.
+        /// lblStatCancelled control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipComedy;
+        protected global::System.Web.UI.WebControls.Label lblStatCancelled;
 
         /// <summary>
-        /// chipFood control.
+        /// btnTabAll control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipFood;
+        protected global::System.Web.UI.WebControls.Button btnTabAll;
 
         /// <summary>
-        /// chipDance control.
+        /// btnTabUpcoming control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipDance;
+        protected global::System.Web.UI.WebControls.Button btnTabUpcoming;
 
         /// <summary>
-        /// chipSports control.
+        /// btnTabAttended control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipSports;
+        protected global::System.Web.UI.WebControls.Button btnTabAttended;
 
         /// <summary>
-        /// chipFree control.
+        /// btnTabCancelled control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipFree;
+        protected global::System.Web.UI.WebControls.Button btnTabCancelled;
 
         /// <summary>
-        /// chipMusic control.
+        /// btnTabPending control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton chipMusic;
+        protected global::System.Web.UI.WebControls.Button btnTabPending;
 
         /// <summary>
-        /// ddlSort control.
+        /// lblResultCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSort;
+        protected global::System.Web.UI.WebControls.Label lblResultCount;
 
         /// <summary>
-        /// rptFeatured control.
+        /// pnlBookings control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptFeatured;
+        protected global::System.Web.UI.WebControls.Panel pnlBookings;
 
         /// <summary>
-        /// lblShowing control.
+        /// rptBookings control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblShowing;
+        protected global::System.Web.UI.WebControls.Repeater rptBookings;
 
         /// <summary>
-        /// lblTotal control.
+        /// pnlEmpty control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotal;
+        protected global::System.Web.UI.WebControls.Panel pnlEmpty;
 
         /// <summary>
-        /// lblFilterLabel control.
+        /// btnBrowse control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblFilterLabel;
+        protected global::System.Web.UI.WebControls.Button btnBrowse;
 
         /// <summary>
-        /// rptEvents control.
+        /// pnlReminders control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptEvents;
+        protected global::System.Web.UI.WebControls.Panel pnlReminders;
 
         /// <summary>
-        /// btnPrev control.
+        /// rptReminders control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnPrev;
-
-        /// <summary>
-        /// btnPage1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnPage1;
-
-        /// <summary>
-        /// btnPage2 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnPage2;
-
-        /// <summary>
-        /// btnPage3 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnPage3;
-
-        /// <summary>
-        /// btnPage4 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnPage4;
-
-        /// <summary>
-        /// btnNext control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnNext;
+        protected global::System.Web.UI.WebControls.Repeater rptReminders;
     }
 }

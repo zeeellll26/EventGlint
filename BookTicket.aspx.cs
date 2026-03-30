@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
-using System.Web;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace EventGlint
 {
@@ -14,122 +9,91 @@ namespace EventGlint
     {
         string connStr = System.Configuration.ConfigurationManager
                               .ConnectionStrings["dbconnection"].ConnectionString;
-
         int eventId = 0;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Session guard
-            if (Session["Username"] == null)
-            {
-                Response.Redirect("Log.aspx");
-                return;
-            }
-
-            // Get EventId from query string
+            if (Session["Username"] == null) { Response.Redirect("Log.aspx"); return; }
             if (!int.TryParse(Request.QueryString["EventId"], out eventId) || eventId == 0)
-            {
-                Response.Redirect("Home.aspx");
-                return;
-            }
+            { Response.Redirect("Home.aspx"); return; }
 
             if (!IsPostBack)
             {
                 LoadUserInfo();
                 LoadEventDetails();
                 LoadShows();
-                SetStepUI(1);   // Start at step 1
+                SetStepUI(1);
             }
         }
 
-        // ── Fill sidebar labels ───────────────────────────────────────────
+        // ── Sidebar user info ─────────────────────────────────────────────
         private void LoadUserInfo()
         {
-            string username = Session["Username"].ToString();
-            lblUserName.Text = username;
+            string u = Session["Username"].ToString();
+            lblUserName.Text = u;
             lblUserRole.Text = "Member";
-            lblAvatarInitial.Text = username.Substring(0, 1).ToUpper();
-            lblTopAvatar.Text = username.Substring(0, 1).ToUpper();
+            lblAvatarInitial.Text = u.Substring(0, 1).ToUpper();
+            lblTopAvatar.Text = u.Substring(0, 1).ToUpper();
         }
 
-        // ── Load event info from DB ───────────────────────────────────────
+        // ── Event details ─────────────────────────────────────────────────
         private void LoadEventDetails()
         {
             SqlConnection con = new SqlConnection(connStr);
             SqlCommand cmd = new SqlCommand(
-                "SELECT Title, EventType, Language, DurationMins, Description FROM Events WHERE EventId = @id", con);
+                "SELECT Title, EventType, Language, DurationMins, Description FROM Events WHERE EventId=@id", con);
             cmd.Parameters.AddWithValue("@id", eventId);
-
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
             da.Fill(dt);
-
             if (dt.Rows.Count == 0) return;
 
             DataRow r = dt.Rows[0];
-
             lblEventTitle.Text = r["Title"].ToString();
             lblEventType.Text = r["EventType"].ToString();
             lblLanguage.Text = r["Language"].ToString();
-            //lblRating.Text = r["CensorRating"].ToString();
             lblDuration.Text = r["DurationMins"].ToString();
             lblDescription.Text = r["Description"].ToString();
             lblSumEvent.Text = r["Title"].ToString();
-
-            // Set emoji based on event type
-            string type = r["EventType"].ToString();
-            lblEventEmoji.Text = GetEventEmoji(type);
+            lblEventEmoji.Text = GetEmoji(r["EventType"].ToString());
         }
 
-        // ── Load upcoming shows for this event ────────────────────────────
+        // ── Upcoming shows ────────────────────────────────────────────────
         private void LoadShows()
         {
             SqlConnection con = new SqlConnection(connStr);
             SqlCommand cmd = new SqlCommand(@"
-                SELECT
-                    sh.ShowId,
-                    sh.ShowDate,
-                    sh.StartTime,
-                    v.Name     AS VenueName,
-                    h.Name     AS HallName,
-                    h.HallType,
-                    (SELECT MIN(sc.Price) FROM SeatCategories sc WHERE sc.HallId = h.HallId) AS MinPrice,
-                    (SELECT COUNT(*) FROM Seats s
-                     WHERE s.HallId = sh.HallId
-                       AND s.SeatId NOT IN (
-                           SELECT bs.SeatId FROM BookedSeats bs
-                           WHERE bs.ShowId = sh.ShowId
-                             AND bs.Status IN ('Held','Confirmed')
-                             AND (bs.HeldUntil IS NULL OR bs.HeldUntil > GETDATE())
-                       )
-                    ) AS AvailableSeats
+                SELECT sh.ShowId, sh.ShowDate, sh.StartTime,
+                       v.Name AS VenueName, h.Name AS HallName, h.HallType,
+                       (SELECT MIN(sc.Price) FROM SeatCategories sc WHERE sc.HallId=h.HallId) AS MinPrice,
+                       (SELECT COUNT(*) FROM Seats s
+                        WHERE s.HallId=sh.HallId
+                          AND s.SeatId NOT IN (
+                              SELECT bs.SeatId FROM BookedSeats bs
+                              WHERE bs.ShowId=sh.ShowId
+                                AND bs.Status IN ('Held','Confirmed')
+                                AND (bs.HeldUntil IS NULL OR bs.HeldUntil > GETDATE())
+                          )
+                       ) AS AvailableSeats
                 FROM Shows sh
                 JOIN Halls  h ON h.HallId  = sh.HallId
                 JOIN Venues v ON v.VenueId = h.VenueId
-                WHERE sh.EventId = @id
+                WHERE sh.EventId=@id
                   AND sh.Status IN ('Upcoming','Live')
                   AND sh.ShowDate >= CAST(GETDATE() AS DATE)
                 ORDER BY sh.ShowDate, sh.StartTime", con);
-
             cmd.Parameters.AddWithValue("@id", eventId);
-
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
             da.Fill(dt);
 
             if (dt.Rows.Count == 0)
-            {
-                pnlNoShows.Visible = true;
-                rptShows.Visible = false;
-            }
+            { pnlNoShows.Visible = true; rptShows.Visible = false; }
             else
-            {
-                rptShows.DataSource = dt;
-                rptShows.DataBind();
-            }
+            { rptShows.DataSource = dt; rptShows.DataBind(); }
         }
 
-        // ── User clicked "Select" on a show ──────────────────────────────
+        // ── User selects a show → show seat map ──────────────────────────
         protected void rptShows_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
         {
             if (e.CommandName != "SelectShow") return;
@@ -137,13 +101,9 @@ namespace EventGlint
             int showId = Convert.ToInt32(e.CommandArgument);
             hfSelectedShowId.Value = showId.ToString();
 
-            // Fill show info in summary
             FillShowSummary(showId);
-
-            // Build seat map
             BuildSeatMap(showId);
 
-            // Show seat map panel, hide show list
             pnlSelectShow.Visible = false;
             pnlSeatMap.Visible = true;
             pnlCoupon.Visible = true;
@@ -151,7 +111,7 @@ namespace EventGlint
             SetStepUI(2);
         }
 
-        // ── Fill summary right panel with show info ───────────────────────
+        // ── Fill show info in summary panel ──────────────────────────────
         private void FillShowSummary(int showId)
         {
             SqlConnection con = new SqlConnection(connStr);
@@ -160,159 +120,104 @@ namespace EventGlint
                 FROM Shows sh
                 JOIN Halls  h ON h.HallId  = sh.HallId
                 JOIN Venues v ON v.VenueId = h.VenueId
-                WHERE sh.ShowId = @id", con);
+                WHERE sh.ShowId=@id", con);
             cmd.Parameters.AddWithValue("@id", showId);
-
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
             da.Fill(dt);
-
             if (dt.Rows.Count == 0) return;
-            DataRow r = dt.Rows[0];
 
-            lblSumShow.Text = Convert.ToDateTime(r["ShowDate"]).ToString("dd MMM yyyy") + " at " + r["StartTime"].ToString();
-            lblSumVenue.Text = r["VenueName"].ToString() + " - " + r["HallName"].ToString();
+            DataRow r = dt.Rows[0];
+            lblSumShow.Text = Convert.ToDateTime(r["ShowDate"]).ToString("dd MMM yyyy") + " at " + FormatTime(r["StartTime"]);
+            lblSumVenue.Text = r["VenueName"] + " — " + r["HallName"];
         }
 
-        // ── Build the seat map HTML from DB ──────────────────────────────
+        // ── Build seat map HTML ───────────────────────────────────────────
         private void BuildSeatMap(int showId)
         {
-            // Get the hall for this show
             SqlConnection con = new SqlConnection(connStr);
-            SqlCommand cmdHall = new SqlCommand("SELECT HallId FROM Shows WHERE ShowId = @id", con);
-            cmdHall.Parameters.AddWithValue("@id", showId);
-            SqlDataAdapter daHall = new SqlDataAdapter(cmdHall);
-            DataTable dtHall = new DataTable();
-            daHall.Fill(dtHall);
-            if (dtHall.Rows.Count == 0) return;
-            int hallId = Convert.ToInt32(dtHall.Rows[0]["HallId"]);
 
-            // Get all seats with their booking status
-            SqlCommand cmdSeats = new SqlCommand(@"
-                SELECT
-                    s.SeatId,
-                    s.RowLabel,
-                    s.SeatNumber,
-                    sc.Name  AS CategoryName,
-                    sc.Price
+            // Get HallId
+            SqlCommand cmdH = new SqlCommand("SELECT HallId FROM Shows WHERE ShowId=@id", con);
+            cmdH.Parameters.AddWithValue("@id", showId);
+            SqlDataAdapter daH = new SqlDataAdapter(cmdH);
+            DataTable dtH = new DataTable();
+            daH.Fill(dtH);
+            if (dtH.Rows.Count == 0) return;
+            int hallId = Convert.ToInt32(dtH.Rows[0]["HallId"]);
+
+            // All seats in hall
+            SqlCommand cmdS = new SqlCommand(@"
+                SELECT s.SeatId, s.RowLabel, s.SeatNumber, sc.Name AS CategoryName, sc.Price
                 FROM Seats s
-                JOIN SeatCategories sc ON sc.CategoryId = s.CategoryId
-                WHERE s.HallId = @hallId
-                  AND s.IsActive = 1
+                JOIN SeatCategories sc ON sc.CategoryId=s.CategoryId
+                WHERE s.HallId=@hid 
                 ORDER BY sc.Name, s.RowLabel, s.SeatNumber", con);
-            cmdSeats.Parameters.AddWithValue("@hallId", hallId);
+            cmdS.Parameters.AddWithValue("@hid", hallId);
 
-            // Get already booked seat IDs for this show
-            SqlCommand cmdBooked = new SqlCommand(@"
+            // Booked / held seats
+            SqlCommand cmdB = new SqlCommand(@"
                 SELECT SeatId FROM BookedSeats
-                WHERE ShowId = @showId
-                  AND Status IN ('Held','Confirmed')
+                WHERE ShowId=@sid AND Status IN ('Held','Confirmed')
                   AND (HeldUntil IS NULL OR HeldUntil > GETDATE())", con);
-            cmdBooked.Parameters.AddWithValue("@showId", showId);
+            cmdB.Parameters.AddWithValue("@sid", showId);
 
-            SqlDataAdapter daSeat = new SqlDataAdapter(cmdSeats);
-            DataTable dtSeats = new DataTable();
-            daSeat.Fill(dtSeats);
+            SqlDataAdapter daS = new SqlDataAdapter(cmdS);
+            SqlDataAdapter daB = new SqlDataAdapter(cmdB);
+            DataTable dtS = new DataTable();
+            DataTable dtB = new DataTable();
+            daS.Fill(dtS);
+            daB.Fill(dtB);
 
-            SqlDataAdapter daBooked = new SqlDataAdapter(cmdBooked);
-            DataTable dtBooked = new DataTable();
-            daBooked.Fill(dtBooked);
+            var booked = new System.Collections.Generic.HashSet<int>();
+            foreach (DataRow br in dtB.Rows)
+                booked.Add(Convert.ToInt32(br["SeatId"]));
 
-            // Build a set of booked seat IDs for quick lookup
-            System.Collections.Generic.HashSet<int> bookedIds = new System.Collections.Generic.HashSet<int>();
-            foreach (DataRow br in dtBooked.Rows)
-                bookedIds.Add(Convert.ToInt32(br["SeatId"]));
-
-            // Build HTML grouped by Category → Row
             StringBuilder html = new StringBuilder();
+            string lastCat = "", lastRow = "";
 
-            // Group by category first
-            string lastCategory = "";
-            string lastRow = "";
-
-            foreach (DataRow r in dtSeats.Rows)
+            foreach (DataRow r in dtS.Rows)
             {
-                string catName = r["CategoryName"].ToString().Trim();
-                string rowLabel = r["RowLabel"].ToString().Trim();
+                string cat = r["CategoryName"].ToString().Trim();
+                string row = r["RowLabel"].ToString().Trim();
                 int seatId = Convert.ToInt32(r["SeatId"]);
-                int seatNum = Convert.ToInt32(r["SeatNumber"]);
+                int num = Convert.ToInt32(r["SeatNumber"]);
                 decimal price = Convert.ToDecimal(r["Price"]);
-                bool isBooked = bookedIds.Contains(seatId);
+                bool isBook = booked.Contains(seatId);
+                string lbl = row + num;
 
-                // New category section
-                if (catName != lastCategory)
+                if (cat != lastCat)
                 {
-                    // Close previous row and section if open
-                    if (lastRow != "") html.Append("</div></div>");    // close seats-wrap + seat-row
-                    if (lastCategory != "") html.Append("</div>");     // close seat-section
-
+                    if (lastRow != "") html.Append("</div></div>");
+                    if (lastCat != "") html.Append("</div>");
                     html.Append("<div class='seat-section'>");
-                    html.Append("<div class='seat-section-label'>" + catName + " — ₹" + price.ToString("N0") + "</div>");
-
-                    lastCategory = catName;
-                    lastRow = "";
+                    html.Append("<div class='seat-section-label'>" + cat + " — ₹" + price.ToString("N0") + "</div>");
+                    lastCat = cat; lastRow = "";
                 }
 
-                // New row
-                if (rowLabel != lastRow)
+                if (row != lastRow)
                 {
-                    if (lastRow != "") html.Append("</div></div>");    // close seats-wrap + seat-row
-
+                    if (lastRow != "") html.Append("</div></div>");
                     html.Append("<div class='seat-row'>");
-                    html.Append("<div class='row-label'>" + rowLabel + "</div>");
+                    html.Append("<div class='row-label'>" + row + "</div>");
                     html.Append("<div class='seats-wrap'>");
-
-                    lastRow = rowLabel;
+                    lastRow = row;
                 }
 
-                // Seat element
-                string catClass = catName.ToLower();
-                string bookedClass = isBooked ? " booked" : "";
-                string label = rowLabel + seatNum;
-
-                if (isBooked)
-                {
-                    html.Append("<div class='seat " + catClass + bookedClass + "' title='" + label + " — Booked'>" + seatNum + "</div>");
-                }
+                string css = "seat " + cat.ToLower() + (isBook ? " booked" : "");
+                if (isBook)
+                    html.Append("<div class='" + css + "' title='" + lbl + " — Booked'>" + num + "</div>");
                 else
-                {
-                    html.Append("<div class='seat " + catClass + bookedClass + "' " +
-                        "onclick=\"toggleSeat(this," + seatId + ",'" + label + "'," + price + ",'" + catName + "')\" " +
-                        "title='" + label + " — ₹" + price + "'>" + seatNum + "</div>");
-                }
+                    html.Append("<div class='" + css + "' onclick=\"toggleSeat(this," + seatId + ",'" + lbl + "'," + price + ",'" + cat + "')\" title='" + lbl + " — ₹" + price + "'>" + num + "</div>");
             }
 
-            // Close any open tags
             if (lastRow != "") html.Append("</div></div>");
-            if (lastCategory != "") html.Append("</div>");
+            if (lastCat != "") html.Append("</div>");
 
-            // Add hidden discount field for JS
             html.Append("<input type='hidden' id='hdnDiscount' value='" + hfDiscount.Value + "' />");
-
-            // Add seats summary div for JS to update
             html.Append("<div id='sumSeatsList' style='margin-top:14px;display:flex;flex-wrap:wrap;gap:6px'><span style='color:var(--muted);font-size:13px'>No seats selected yet</span></div>");
 
             litSeatMap.Text = html.ToString();
-        }
-
-        // ── User clicks "Confirm Seats" after selecting on the seat map ───
-        protected void btnConfirmSeats_Click(object sender, EventArgs e)
-        {
-            // Read seat IDs from the posted form value
-            string seats = Request.Form["hdnSeats"];
-
-            if (string.IsNullOrEmpty(seats))
-            {
-                ShowMessage("Please select at least one seat.", false);
-                return;
-            }
-
-            hfSelectedSeats.Value = seats;
-
-            // Calculate total from DB prices
-            CalculateTotals();
-
-            SetStepUI(3);
         }
 
         // ── Apply coupon ──────────────────────────────────────────────────
@@ -321,190 +226,190 @@ namespace EventGlint
             string code = txtCoupon.Text.Trim().ToUpper();
             if (string.IsNullOrEmpty(code)) return;
 
-            // Get subtotal to validate min order
-            decimal subtotal = GetSubtotal();
+            decimal subtotal = GetSubtotal(hfSelectedSeats.Value);
 
             SqlConnection con = new SqlConnection(connStr);
             SqlCommand cmd = new SqlCommand(@"
                 SELECT CouponId, DiscountType, DiscountValue, MaxDiscount, MinOrderValue
                 FROM Coupons
-                WHERE Code = @code
-                  AND IsActive = 1
-                  AND ValidFrom <= GETDATE()
-                  AND ValidTill >= GETDATE()
+                WHERE Code=@code AND IsActive=1
+                  AND ValidFrom<=GETDATE() AND ValidTill>=GETDATE()
                   AND (UsageLimit IS NULL OR UsedCount < UsageLimit)", con);
             cmd.Parameters.AddWithValue("@code", code);
-
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
             da.Fill(dt);
 
             if (dt.Rows.Count == 0)
             {
-                lblCouponMsg.Text = "❌ Invalid or expired coupon code.";
+                lblCouponMsg.Text = "❌ Invalid or expired coupon.";
                 lblCouponMsg.CssClass = "coupon-msg coupon-err";
                 lblCouponMsg.Visible = true;
-                hfCouponId.Value = "0";
-                hfDiscount.Value = "0";
+                hfCouponId.Value = "0"; hfDiscount.Value = "0";
                 return;
             }
 
             DataRow r = dt.Rows[0];
-            decimal minOrder = Convert.ToDecimal(r["MinOrderValue"]);
-
-            if (subtotal < minOrder)
+            decimal minOrd = Convert.ToDecimal(r["MinOrderValue"]);
+            if (subtotal < minOrd)
             {
-                lblCouponMsg.Text = "❌ Minimum order ₹" + minOrder.ToString("N0") + " required for this coupon.";
+                lblCouponMsg.Text = "❌ Minimum order ₹" + minOrd.ToString("N0") + " required.";
                 lblCouponMsg.CssClass = "coupon-msg coupon-err";
                 lblCouponMsg.Visible = true;
                 return;
             }
 
-            // Calculate discount
-            decimal discount = 0;
-            string discType = r["DiscountType"].ToString();
-            decimal discVal = Convert.ToDecimal(r["DiscountValue"]);
-            object maxDisc = r["MaxDiscount"];
-
-            if (discType == "Percentage")
+            decimal discount = 0, discVal = Convert.ToDecimal(r["DiscountValue"]);
+            if (r["DiscountType"].ToString() == "Percentage")
             {
                 discount = subtotal * discVal / 100;
-                if (maxDisc != DBNull.Value)
-                    discount = Math.Min(discount, Convert.ToDecimal(maxDisc));
+                if (r["MaxDiscount"] != DBNull.Value)
+                    discount = Math.Min(discount, Convert.ToDecimal(r["MaxDiscount"]));
             }
-            else // Flat
-            {
-                discount = discVal;
-            }
+            else discount = discVal;
 
             hfCouponId.Value = r["CouponId"].ToString();
             hfDiscount.Value = discount.ToString("F0");
-
             lblCouponMsg.Text = "✅ Coupon applied! You save ₹" + discount.ToString("N0");
             lblCouponMsg.CssClass = "coupon-msg coupon-ok";
             lblCouponMsg.Visible = true;
-
-            CalculateTotals();
         }
 
-        // ── Final "Confirm Booking" button ────────────────────────────────
-        protected void btnBookNow_Click(object sender, EventArgs e)
+        // ── Confirm Seats → create booking (Pending) → go to Payment ─────
+        protected void btnConfirmSeats_Click(object sender, EventArgs e)
         {
-            // Re-read seats from form (JS sets hdnSeats on every toggle)
-            string seatsCsv = hfSelectedSeats.Value;
+            // Read seats from the JS-populated hidden field
+            string seatsCsv = Request.Form["hdnSeats"];
 
             if (string.IsNullOrEmpty(seatsCsv))
             {
-                ShowMessage("No seats selected. Please go back and select seats.", false);
+                ShowMessage("Please select at least one seat first.", false);
                 return;
             }
+
+            hfSelectedSeats.Value = seatsCsv;
 
             int showId = Convert.ToInt32(hfSelectedShowId.Value);
-
-            // Get UserId from DB
             int userId = GetUserId();
-            if (userId == 0)
-            {
-                Response.Redirect("Log.aspx");
-                return;
-            }
+            if (userId == 0) { Response.Redirect("Log.aspx"); return; }
 
-            // Calculate amounts
-            decimal subtotal = GetSubtotal();
+            // Amounts
+            decimal subtotal = GetSubtotal(seatsCsv);
             decimal fee = Math.Round(subtotal * 0.02m);
-            decimal discount = Convert.ToDecimal(hfDiscount.Value == "" ? "0" : hfDiscount.Value);
+            decimal discount = string.IsNullOrEmpty(hfDiscount.Value) ? 0 : Convert.ToDecimal(hfDiscount.Value);
             decimal total = subtotal + fee - discount;
-
-            // Generate unique booking ref
+            int couponId = string.IsNullOrEmpty(hfCouponId.Value) ? 0 : Convert.ToInt32(hfCouponId.Value);
             string bookingRef = "EG" + DateTime.Now.ToString("yyyyMMddHHmmss") + new Random().Next(10, 99);
 
-            int couponId = Convert.ToInt32(hfCouponId.Value == "" ? "0" : hfCouponId.Value);
-
-            // Use the stored procedure sp_CreateBooking
-            SqlConnection con = new SqlConnection(connStr);
-            con.Open();
-
-            SqlCommand cmd = new SqlCommand("sp_CreateBooking", con);
-            cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-            cmd.Parameters.AddWithValue("@UserId", userId);
-            cmd.Parameters.AddWithValue("@ShowId", showId);
-            cmd.Parameters.AddWithValue("@SeatIds", seatsCsv);
-            cmd.Parameters.AddWithValue("@CouponId", couponId == 0 ? (object)DBNull.Value : couponId);
-            cmd.Parameters.AddWithValue("@TotalAmount", subtotal);
-            cmd.Parameters.AddWithValue("@ConvenienceFee", fee);
-            cmd.Parameters.AddWithValue("@DiscountAmount", discount);
-            cmd.Parameters.AddWithValue("@FinalAmount", total);
-            cmd.Parameters.AddWithValue("@BookingRef", bookingRef);
-
-            SqlParameter outParam = new SqlParameter("@BookingId", System.Data.SqlDbType.Int);
-            outParam.Direction = System.Data.ParameterDirection.Output;
-            cmd.Parameters.Add(outParam);
-
+            int bookingId = 0;
             try
             {
-                cmd.ExecuteNonQuery();
-
-                int newBookingId = Convert.ToInt32(outParam.Value);
-
-                // Update coupon used count
-                if (couponId > 0)
+                using (SqlConnection con = new SqlConnection(connStr))
                 {
-                    SqlCommand updCoupon = new SqlCommand(
-                        "UPDATE Coupons SET UsedCount = UsedCount + 1 WHERE CouponId = @id", con);
-                    updCoupon.Parameters.AddWithValue("@id", couponId);
-                    updCoupon.ExecuteNonQuery();
+                    con.Open();
+                    SqlTransaction tx = con.BeginTransaction();
+                    try
+                    {
+                        // 1. Insert Booking with Status = 'Pending'
+                        SqlCommand cmdBook = new SqlCommand(@"
+                            INSERT INTO Bookings
+                                (UserId, ShowId, TotalAmount, ConvenienceFee, DiscountAmount,
+                                 FinalAmount, CouponId, BookingRef, Status, BookingDate)
+                            VALUES
+                                (@uid, @sid, @tot, @fee, @disc,
+                                 @fin, @cid, @ref, 'Pending', GETDATE());
+                            SELECT SCOPE_IDENTITY();", con, tx);
+
+                        cmdBook.Parameters.AddWithValue("@uid", userId);
+                        cmdBook.Parameters.AddWithValue("@sid", showId);
+                        cmdBook.Parameters.AddWithValue("@tot", subtotal);
+                        cmdBook.Parameters.AddWithValue("@fee", fee);
+                        cmdBook.Parameters.AddWithValue("@disc", discount);
+                        cmdBook.Parameters.AddWithValue("@fin", total);
+                        cmdBook.Parameters.AddWithValue("@cid", couponId > 0 ? (object)couponId : DBNull.Value);
+                        cmdBook.Parameters.AddWithValue("@ref", bookingRef);
+                        bookingId = Convert.ToInt32(cmdBook.ExecuteScalar());
+
+                        // 2. Hold each seat for 10 minutes
+                        foreach (string sid in seatsCsv.Split(','))
+                        {
+                            if (!int.TryParse(sid.Trim(), out int seatId)) continue;
+
+                            SqlCommand cmdPrice = new SqlCommand(
+                                "SELECT sc.Price FROM Seats s JOIN SeatCategories sc ON sc.CategoryId=s.CategoryId WHERE s.SeatId=@id",
+                                con, tx);
+                            cmdPrice.Parameters.AddWithValue("@id", seatId);
+                            decimal seatPrice = Convert.ToDecimal(cmdPrice.ExecuteScalar());
+
+                            SqlCommand cmdSeat = new SqlCommand(@"
+                                INSERT INTO BookedSeats (BookingId,SeatId,ShowId,PricePaid,Status,HeldUntil)
+                                VALUES (@bid,@seatId,@showId,@price,'Held',DATEADD(MINUTE,10,GETDATE()))",
+                                con, tx);
+                            cmdSeat.Parameters.AddWithValue("@bid", bookingId);
+                            cmdSeat.Parameters.AddWithValue("@seatId", seatId);
+                            cmdSeat.Parameters.AddWithValue("@showId", showId);
+                            cmdSeat.Parameters.AddWithValue("@price", seatPrice);
+                            cmdSeat.ExecuteNonQuery();
+                        }
+
+                        // 3. Mark coupon as used
+                        if (couponId > 0)
+                        {
+                            SqlCommand cmdCoupon = new SqlCommand(
+                                "UPDATE Coupons SET UsedCount=UsedCount+1 WHERE CouponId=@id", con, tx);
+                            cmdCoupon.Parameters.AddWithValue("@id", couponId);
+                            cmdCoupon.ExecuteNonQuery();
+                        }
+
+                        tx.Commit();
+                    }
+                    catch { tx.Rollback(); throw; }
                 }
 
-                con.Close();
+                // Save to session for Payment page
+                Session["BookingId"] = bookingId;
+                Session["BookingRef"] = bookingRef;
 
-                // Redirect to confirmation page
-                Response.Redirect("BookingConfirm.aspx?ref=" + bookingRef);
+                // ── Go to Payment page ──────────────────────────────
+                Response.Redirect("Payment.aspx?BookingId=" + bookingId + "&ref=" + bookingRef);
             }
             catch (Exception ex)
             {
-                con.Close();
                 ShowMessage("Booking failed: " + ex.Message, false);
             }
         }
 
         // ── Helpers ───────────────────────────────────────────────────────
-
         private int GetUserId()
         {
-            string username = Session["Username"].ToString();
+            string u = Session["Username"].ToString();
             SqlConnection con = new SqlConnection(connStr);
-            SqlCommand cmd = new SqlCommand("SELECT UserId FROM Users WHERE Username = @u", con);
-            cmd.Parameters.AddWithValue("@u", username);
+            SqlCommand cmd = new SqlCommand("SELECT UserId FROM Users WHERE Username=@u", con);
+            cmd.Parameters.AddWithValue("@u", u);
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
             da.Fill(dt);
             return dt.Rows.Count > 0 ? Convert.ToInt32(dt.Rows[0]["UserId"]) : 0;
         }
 
-        private decimal GetSubtotal()
+        private decimal GetSubtotal(string seatsCsv)
         {
-            string seatsCsv = hfSelectedSeats.Value;
             if (string.IsNullOrEmpty(seatsCsv)) return 0;
-
-            string[] ids = seatsCsv.Split(',');
+            string[] ids = seatsCsv.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             if (ids.Length == 0) return 0;
 
-            // Build parameterized IN query
             StringBuilder sqlIn = new StringBuilder();
             SqlConnection con = new SqlConnection(connStr);
             SqlCommand cmd = new SqlCommand();
             cmd.Connection = con;
-
             for (int i = 0; i < ids.Length; i++)
             {
-                string pName = "@id" + i;
-                sqlIn.Append(pName);
-                if (i < ids.Length - 1) sqlIn.Append(",");
-                cmd.Parameters.AddWithValue(pName, Convert.ToInt32(ids[i].Trim()));
+                string p = "@p" + i;
+                if (i > 0) sqlIn.Append(",");
+                sqlIn.Append(p);
+                cmd.Parameters.AddWithValue(p, Convert.ToInt32(ids[i].Trim()));
             }
-
-            cmd.CommandText = "SELECT ISNULL(SUM(sc.Price),0) FROM Seats s JOIN SeatCategories sc ON sc.CategoryId = s.CategoryId WHERE s.SeatId IN (" + sqlIn + ")";
+            cmd.CommandText = "SELECT ISNULL(SUM(sc.Price),0) FROM Seats s JOIN SeatCategories sc ON sc.CategoryId=s.CategoryId WHERE s.SeatId IN (" + sqlIn + ")";
 
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             DataTable dt = new DataTable();
@@ -512,37 +417,13 @@ namespace EventGlint
             return dt.Rows.Count > 0 ? Convert.ToDecimal(dt.Rows[0][0]) : 0;
         }
 
-        private void CalculateTotals()
+        private void SetStepUI(int step)
         {
-            decimal subtotal = GetSubtotal();
-            decimal fee = Math.Round(subtotal * 0.02m);
-            decimal discount = Convert.ToDecimal(hfDiscount.Value == "" ? "0" : hfDiscount.Value);
-            decimal total = subtotal + fee - discount;
-
-            lblSumSubtotal.Text = subtotal.ToString("N0");
-            lblSumFee.Text = fee.ToString("N0");
-            lblSumDiscount.Text = discount.ToString("N0");
-            lblSumTotal.Text = total.ToString("N0");
-
-            int seatCount = hfSelectedSeats.Value == "" ? 0 : hfSelectedSeats.Value.Split(',').Length;
-            lblSumSeats.Text = seatCount > 0 ? seatCount + " seat(s)" : "None selected";
-        }
-
-        // ── Update step indicator CSS classes ─────────────────────────────
-        private void SetStepUI(int currentStep)
-        {
-            // Step 1
-            string s1 = currentStep == 1 ? "step active" : "step done";
-            string s2 = currentStep == 1 ? "step pending" : currentStep == 2 ? "step active" : "step done";
-            string s3 = currentStep < 3 ? "step pending" : "step active";
-            string l1 = currentStep > 1 ? "step-line done" : "step-line";
-            string l2 = currentStep > 2 ? "step-line done" : "step-line";
-
-            step1div.Attributes["class"] = s1;
-            step2div.Attributes["class"] = s2;
-            step3div.Attributes["class"] = s3;
-            line1.Attributes["class"] = l1;
-            line2.Attributes["class"] = l2;
+            step1div.Attributes["class"] = step == 1 ? "step active" : "step done";
+            step2div.Attributes["class"] = step == 1 ? "step pending" : step == 2 ? "step active" : "step done";
+            step3div.Attributes["class"] = step < 3 ? "step pending" : "step active";
+            line1.Attributes["class"] = step > 1 ? "step-line done" : "step-line";
+            line2.Attributes["class"] = step > 2 ? "step-line done" : "step-line";
         }
 
         private void ShowMessage(string msg, bool success)
@@ -551,9 +432,17 @@ namespace EventGlint
             lblMessage.Visible = true;
         }
 
-        private string GetEventEmoji(string eventType)
+        private string FormatTime(object val)
         {
-            switch (eventType)
+            if (val == null || val == DBNull.Value) return "";
+            if (val is TimeSpan ts) return DateTime.Today.Add(ts).ToString("hh:mm tt");
+            if (TimeSpan.TryParse(val.ToString(), out TimeSpan p)) return DateTime.Today.Add(p).ToString("hh:mm tt");
+            return val.ToString();
+        }
+
+        private string GetEmoji(string type)
+        {
+            switch (type)
             {
                 case "Movie": return "🎬";
                 case "Concert": return "🎵";

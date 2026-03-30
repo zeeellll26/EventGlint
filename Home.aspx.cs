@@ -12,80 +12,6 @@ namespace EventGlint
 {
     public partial class Home : System.Web.UI.Page
     {
-        //protected void Page_Load(object sender, EventArgs e)
-        //{
-        //    if (!IsPostBack)
-        //    {
-        //        LoadUserInfo();
-        //        LoadDashboardStats();
-        //    }
-        //}
-
-        //// ── Populate logged-in user details ─────────────────────────────
-        //private void LoadUserInfo()
-        //{
-        //    // TODO: Replace with Session / Membership lookup
-        //    string userName = "Rahul Patel";
-        //    string userRole = "Pro Member ✦";
-
-        //    lblUserName.Text = userName;
-        //    lblUserRole.Text = userRole;
-        //    lblAvatarInitial.Text = userName.Substring(0, 1).ToUpper();
-        //    lblTopAvatar.Text = userName.Substring(0, 1).ToUpper();
-        //    lblLocation.Text = "Surat, Gujarat";
-        //}
-
-        //// ── Populate KPI stat cards ──────────────────────────────────────
-        //private void LoadDashboardStats()
-        //{
-        //    // TODO: Replace with real DB queries
-        //    lblEventsCount.Text = "124";
-        //    lblEventsTrend.Text = "+12%";
-        //    lblTicketsSold.Text = "3,410";
-        //    lblTicketsTrend.Text = "+8%";
-        //    lblRating.Text = "4.9";
-        //    lblRatingTrend.Text = "+0.2";
-        //    lblUsers.Text = "52K";
-        //    lblUsersTrend.Text = "-1%";
-        //}
-
-        //// ── Hero — Get Tickets button ────────────────────────────────────
-        //protected void btnGetTickets_Click(object sender, EventArgs e)
-        //{
-        //    Response.Redirect("Event.aspx?id=holi2026");
-        //}
-
-        //// ── Hero — Learn More button ─────────────────────────────────────
-        //protected void btnLearnMore_Click(object sender, EventArgs e)
-        //{
-        //    Response.Redirect("Event.aspx?detail=holi2026");
-        //}
-
-        //// ── Attend buttons on event cards ───────────────────────────────
-        //// CommandArgument carries the event ID ("1", "2", "3")
-        //protected void btnAttend_Click(object sender, EventArgs e)
-        //{
-        //    var btn = (System.Web.UI.WebControls.Button)sender;
-        //    string eventId = btn.CommandArgument;
-        //    Response.Redirect("Event.aspx?id=" + eventId);
-        //}
-
-        //// ── Promo — Upgrade Now button ───────────────────────────────────
-        //protected void btnUpgrade_Click(object sender, EventArgs e)
-        //{
-        //    Response.Redirect("Upgrade.aspx");
-        //}
-
-        //// ── Topbar — Search / Filter button ─────────────────────────────
-        //protected void btnFilter_Click(object sender, EventArgs e)
-        //{
-        //    string query = txtSearch.Text.Trim();
-        //    if (!string.IsNullOrEmpty(query))
-        //        Response.Redirect("Event.aspx?q=" + Server.UrlEncode(query));
-        //    else
-        //        Response.Redirect("Event.aspx");
-        //}
-
         private string connStr = ConfigurationManager.ConnectionStrings["dbconnection"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
@@ -100,6 +26,9 @@ namespace EventGlint
             {
                 LoadUserInfo();
                 LoadDashboardStats();
+                LoadUpcomingEvents();
+                LoadTrendingEvents();
+                LoadCategoryStats();
             }
         }
 
@@ -112,14 +41,16 @@ namespace EventGlint
 
                 using (SqlConnection con = new SqlConnection(connStr))
                 {
+                    con.Open();
+
                     // Fetch user + their city name in one query
                     SqlCommand cmd = new SqlCommand(@"
-                    SELECT u.Username, u.Email, u.Phone,
-                           ISNULL(c.Name + ', ' + c.State, 'India') AS Location,
-                           u.CreatedAt
-                    FROM Users u
-                    LEFT JOIN Cities c ON c.CityId = u.CityId
-                    WHERE u.Username = @username", con);
+                        SELECT u.UserId, u.Username, u.Email, u.Phone,
+                               ISNULL(c.Name + ', ' + c.State, 'India') AS Location,
+                               u.CreatedAt
+                        FROM Users u
+                        LEFT JOIN Cities c ON c.CityId = u.CityId
+                        WHERE u.Username = @username", con);
 
                     cmd.Parameters.AddWithValue("@username", username);
 
@@ -134,12 +65,14 @@ namespace EventGlint
                         int userID = Convert.ToInt32(r["UserId"]);
                         string location = r["Location"].ToString();
 
-                        // ── Check how many bookings the user has made ────────────
-                        // Use that to decide member tier
+                        // Store UserId in session for later use
+                        Session["UserId"] = userID;
+
+                        // Check how many bookings the user has made
                         int bookingCount = GetUserBookingCount(con, userID);
                         string userRole = GetMemberTier(bookingCount);
 
-                        // ── Fill all labels ──────────────────────────────────────
+                        // Fill all labels
                         lblUserName.Text = username;
                         lblUserRole.Text = userRole;
                         lblLocation.Text = location;
@@ -206,21 +139,11 @@ namespace EventGlint
                     lblEventsCount.Text = FormatCount(totalEvents);
                     lblEventsTrend.Text = GetEventsTrend(con);
 
-                    // ── Tickets sold to this user ────────────────────────────────
-                    int userId = Convert.ToInt32(Session["UserId"]);
+                    // ── Tickets sold (platform-wide) ────────────────────────────────
                     int ticketsSold = GetScalarInt(con,
-                        @"SELECT ISNULL(SUM(bs.BookedSeatId), 0)
-                      FROM BookedSeats bs
-                      JOIN Bookings b ON b.BookingId = bs.BookingId
-                      WHERE b.UserId = @uid AND bs.Status = 'Confirmed'",
-                        new SqlParameter("@uid", userId));
-
-                    // If the view is platform-wide (e.g. admin-style home), use total tickets:
-                    // int ticketsSold = GetScalarInt(con,
-                    //     "SELECT COUNT(*) FROM BookedSeats WHERE Status = 'Confirmed'");
-
+                        "SELECT COUNT(*) FROM BookedSeats WHERE Status = 'Confirmed'");
                     lblTicketsSold.Text = FormatCount(ticketsSold);
-                    lblTicketsTrend.Text = GetTicketsTrend(con, userId);
+                    lblTicketsTrend.Text = GetTicketsTrend(con);
 
                     // ── Average rating across all events (from Reviews table) ────
                     decimal avgRating = GetScalarDecimal(con,
@@ -236,7 +159,7 @@ namespace EventGlint
             }
             catch (Exception ex)
             {
-                // Safe fallback — show dashes so page doesn't break
+                // Safe fallback
                 lblEventsCount.Text = "—"; lblEventsTrend.Text = "";
                 lblTicketsSold.Text = "—"; lblTicketsTrend.Text = "";
                 lblRating.Text = "—"; lblRatingTrend.Text = "";
@@ -246,7 +169,110 @@ namespace EventGlint
             }
         }
 
-        // ── Trend: events added this month vs last month ──────────────────────────
+        // ── Load Upcoming Events (Top 3) ──────────────────────────────────────────
+        private void LoadUpcomingEvents()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    con.Open();
+
+                    string query = @"
+                        SELECT TOP 3 EventId, Title, EventType, Description, 
+                               ReleaseDate, DurationMins, Language, Genre
+                        FROM Events 
+                        WHERE EndDate IS NULL OR EndDate >= GETDATE()
+                        ORDER BY ReleaseDate ASC";
+
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    rptUpcoming.DataSource = dt;
+                    rptUpcoming.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadUpcomingEvents error: " + ex.Message);
+            }
+        }
+
+        // ── Load Trending Events (Top 4 by recent bookings) ──────────────────────
+        private void LoadTrendingEvents()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    con.Open();
+
+                    // Get events with most recent bookings
+                    string query = @"
+                        SELECT TOP 4 
+                            e.EventId, 
+                            e.Title, 
+                            e.EventType,
+                            e.ReleaseDate,
+                            COUNT(bs.BookedSeatId) as BookingCount
+                        FROM Events e
+                        LEFT JOIN Bookings b ON b.EventId = e.EventId
+                        LEFT JOIN BookedSeats bs ON bs.BookingId = b.BookingId
+                        WHERE (e.EndDate IS NULL OR e.EndDate >= GETDATE())
+                        GROUP BY e.EventId, e.Title, e.EventType, e.ReleaseDate
+                        ORDER BY BookingCount DESC, e.ReleaseDate ASC";
+
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    rptTrending.DataSource = dt;
+                    rptTrending.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadTrendingEvents error: " + ex.Message);
+            }
+        }
+
+        // ── Load Category Statistics ──────────────────────────────────────────────
+        private void LoadCategoryStats()
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connStr))
+                {
+                    con.Open();
+
+                    string query = @"
+                        SELECT TOP 4
+                            ISNULL(EventType, 'Other') as Category,
+                            COUNT(*) as EventCount
+                        FROM Events
+                        WHERE EndDate IS NULL OR EndDate >= GETDATE()
+                        GROUP BY EventType
+                        ORDER BY COUNT(*) DESC";
+
+                    SqlCommand cmd = new SqlCommand(query, con);
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    rptCategories.DataSource = dt;
+                    rptCategories.DataBind();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadCategoryStats error: " + ex.Message);
+            }
+        }
+
+        // ── Trend Calculations ────────────────────────────────────────────────────
         private string GetEventsTrend(SqlConnection con)
         {
             try
@@ -263,24 +289,23 @@ namespace EventGlint
             catch { return ""; }
         }
 
-        // ── Trend: user's tickets this month vs last month ────────────────────────
-        private string GetTicketsTrend(SqlConnection con, int userId)
+        private string GetTicketsTrend(SqlConnection con)
         {
             try
             {
                 int thisMonth = GetScalarInt(con,
                     @"SELECT COUNT(*) FROM BookedSeats bs
-                  JOIN Bookings b ON b.BookingId=bs.BookingId
-                  WHERE b.UserId=@uid AND bs.Status='Confirmed'
-                  AND MONTH(b.BookingDate)=MONTH(GETDATE()) AND YEAR(b.BookingDate)=YEAR(GETDATE())",
-                    new SqlParameter("@uid", userId));
+                      JOIN Bookings b ON b.BookingId=bs.BookingId
+                      WHERE bs.Status='Confirmed'
+                      AND MONTH(b.BookingDate)=MONTH(GETDATE()) 
+                      AND YEAR(b.BookingDate)=YEAR(GETDATE())");
 
                 int lastMonth = GetScalarInt(con,
                     @"SELECT COUNT(*) FROM BookedSeats bs
-                  JOIN Bookings b ON b.BookingId=bs.BookingId
-                  WHERE b.UserId=@uid AND bs.Status='Confirmed'
-                  AND MONTH(b.BookingDate)=MONTH(DATEADD(MONTH,-1,GETDATE())) AND YEAR(b.BookingDate)=YEAR(DATEADD(MONTH,-1,GETDATE()))",
-                    new SqlParameter("@uid", userId));
+                      JOIN Bookings b ON b.BookingId=bs.BookingId
+                      WHERE bs.Status='Confirmed'
+                      AND MONTH(b.BookingDate)=MONTH(DATEADD(MONTH,-1,GETDATE())) 
+                      AND YEAR(b.BookingDate)=YEAR(DATEADD(MONTH,-1,GETDATE()))");
 
                 if (lastMonth == 0) return thisMonth > 0 ? "+100%" : "0%";
                 double pct = ((double)(thisMonth - lastMonth) / lastMonth) * 100;
@@ -289,18 +314,19 @@ namespace EventGlint
             catch { return ""; }
         }
 
-        // ── Trend: avg rating this month vs last month ────────────────────────────
         private string GetRatingTrend(SqlConnection con)
         {
             try
             {
                 decimal thisMonth = GetScalarDecimal(con,
                     @"SELECT ISNULL(ROUND(AVG(CAST(Rating AS DECIMAL(3,1))),1),0)
-                  FROM Reviews WHERE MONTH(CreatedAt)=MONTH(GETDATE()) AND YEAR(CreatedAt)=YEAR(GETDATE())");
+                      FROM Reviews WHERE MONTH(CreatedAt)=MONTH(GETDATE()) 
+                      AND YEAR(CreatedAt)=YEAR(GETDATE())");
 
                 decimal lastMonth = GetScalarDecimal(con,
                     @"SELECT ISNULL(ROUND(AVG(CAST(Rating AS DECIMAL(3,1))),1),0)
-                  FROM Reviews WHERE MONTH(CreatedAt)=MONTH(DATEADD(MONTH,-1,GETDATE())) AND YEAR(CreatedAt)=YEAR(DATEADD(MONTH,-1,GETDATE()))");
+                      FROM Reviews WHERE MONTH(CreatedAt)=MONTH(DATEADD(MONTH,-1,GETDATE())) 
+                      AND YEAR(CreatedAt)=YEAR(DATEADD(MONTH,-1,GETDATE()))");
 
                 decimal diff = thisMonth - lastMonth;
                 return (diff >= 0 ? "+" : "") + diff.ToString("F1");
@@ -308,7 +334,6 @@ namespace EventGlint
             catch { return ""; }
         }
 
-        // ── Trend: new users this month vs last month ─────────────────────────────
         private string GetUsersTrend(SqlConnection con)
         {
             try
@@ -354,5 +379,121 @@ namespace EventGlint
             return n.ToString();
         }
 
+        // ── Helper Methods for Repeaters ──────────────────────────────────────────
+        protected string GetEventEmoji(object eventType)
+        {
+            if (eventType == null || eventType == DBNull.Value)
+                return "🎪";
+
+            string type = eventType.ToString().ToLower();
+
+            switch (type)
+            {
+                case "music": return "🎵";
+                case "film": return "🎬";
+                case "arts": return "🎨";
+                case "food": return "🍽️";
+                case "sports": return "🏅";
+                case "comedy": return "🎤";
+                case "dance": return "💃";
+                case "gaming": return "🎮";
+                default: return "🎪";
+            }
+        }
+
+        protected string GetEventBackgroundClass(object eventType)
+        {
+            if (eventType == null || eventType == DBNull.Value)
+                return "holi";
+
+            string type = eventType.ToString().ToLower();
+
+            switch (type)
+            {
+                case "music": return "music";
+                case "film": return "film";
+                case "food": return "film";
+                default: return "holi";
+            }
+        }
+
+        protected string FormatEventDate(object releaseDate)
+        {
+            if (releaseDate == null || releaseDate == DBNull.Value)
+                return "TBA";
+
+            DateTime date = Convert.ToDateTime(releaseDate);
+            return date.ToString("d MMMM, yyyy");
+        }
+
+        protected string GetCategoryEmoji(object category)
+        {
+            if (category == null || category == DBNull.Value)
+                return "🎪";
+
+            string cat = category.ToString().ToLower();
+
+            switch (cat)
+            {
+                case "music": return "🎵";
+                case "film": return "🎬";
+                case "arts": return "🎨";
+                case "food": return "🍽️";
+                case "sports": return "🏅";
+                case "comedy": return "🎤";
+                case "dance": return "💃";
+                case "gaming": return "🎮";
+                default: return "🎪";
+            }
+        }
+
+        protected string GetRankClass(int index)
+        {
+            return index < 2 ? "rank top" : "rank";
+        }
+
+        protected string GetPopImageGradient(int index)
+        {
+            string[] gradients = {
+                "linear-gradient(135deg,#fde68a,#fca5a5)",
+                "linear-gradient(135deg,#93c5fd,#c084fc)",
+                "linear-gradient(135deg,#6ee7b7,#67e8f9)",
+                "linear-gradient(135deg,#fde68a,#fb923c)"
+            };
+            return gradients[index % gradients.Length];
+        }
+
+        // ── Button Click Handlers ─────────────────────────────────────────────────
+        protected void btnGetTickets_Click(object sender, EventArgs e)
+        {
+            // Redirect to first upcoming event or events page
+            Response.Redirect("Event.aspx");
+        }
+
+        protected void btnLearnMore_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Event.aspx");
+        }
+
+        protected void btnAttend_Click(object sender, EventArgs e)
+        {
+            var btn = (Button)sender;
+            string eventId = btn.CommandArgument;
+            Response.Redirect("BookTicket.aspx?EventId=" + eventId);
+        }
+
+        protected void btnUpgrade_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Upgrade.aspx");
+        }
+
+        protected void btnFilter_Click(object sender, EventArgs e)
+        {
+            string query = txtSearch.Text.Trim();
+            if (!string.IsNullOrEmpty(query))
+                Response.Redirect("Event.aspx?q=" + Server.UrlEncode(query));
+            else
+                Response.Redirect("Event.aspx");
+        }
     }
 }
