@@ -1,7 +1,7 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Event.aspx.cs" Inherits="EventGlint.Event" %>
 
 <!DOCTYPE html>
-
+<%@ Import Namespace="System.Web.Optimization" %>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>EventGlint | Events</title>
@@ -299,266 +299,87 @@
       </div>
 
       <!-- ── FEATURED EVENTS ── -->
-      <div class="sec-row">
-        <div><span class="sec-title">⭐ Featured Events</span></div>
-        <a class="see-all" href="#">See All →</a>
-      </div>
-      <div class="featured-grid">
+<div class="sec-row">
+    <div><span class="sec-title">⭐ Featured Events</span></div>
+    <a class="see-all" href="#">See All →</a>
+</div>
 
+<asp:Repeater ID="rptFeatured" runat="server">
+    <HeaderTemplate>
+        <div class="featured-grid">
+    </HeaderTemplate>
+    <ItemTemplate>
         <div class="ev-wide">
-          <div class="ev-wide-thumb bg1">🎵</div>
-          <div class="ev-wide-body">
-            <div>
-              <div class="ev-wide-cat">🎵 Music</div>
-              <div class="ev-wide-name">Biggest Holi Celebration 2026</div>
-              <div class="ev-wide-meta">
-                <span>📅 Sat, 4 Mar 2026 · All Day</span>
-                <span>📍 Ring Road Ground, Surat</span>
-                <span>👥 2,000+ attending</span>
-              </div>
+            <div class='ev-wide-thumb <%# GetBackgroundClass(Container.ItemIndex) %>'>
+                <%# GetEventEmoji(Eval("EventType")) %>
             </div>
-            <div class="ev-wide-footer">
-              <div class="ev-wide-price">₹499</div>
-              <asp:Button ID="btnFeat1" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="1" />
+            <div class="ev-wide-body">
+                <div>
+                    <div class="ev-wide-cat"><%# GetEventEmoji(Eval("EventType")) %> <%# Eval("EventType") %></div>
+                    <div class="ev-wide-name"><%# Eval("Title") %></div>
+                    <div class="ev-wide-meta">
+                        <span>📅 <%# FormatEventDate(Eval("ReleaseDate")) %></span>
+                        <span>⏱️ <%# Eval("DurationMins") %> mins</span>
+                        <span>🗣️ <%# Eval("Language") %></span>
+                    </div>
+                </div>
+                <div class="ev-wide-footer">
+                    <div class="ev-wide-price free">Book Now</div>
+                    <asp:Button ID="btnFeatBook" runat="server" CssClass="ev-book-btn" Text="Book Now"
+                        OnClick="btnBook_Click" CommandArgument='<%# Eval("EventId") %>' />
+                </div>
             </div>
-          </div>
         </div>
-
-        <div class="ev-wide">
-          <div class="ev-wide-thumb bg6">🎤</div>
-          <div class="ev-wide-body">
-            <div>
-              <div class="ev-wide-cat">🎭 Comedy</div>
-              <div class="ev-wide-name">Comedy Night Live — Season 3</div>
-              <div class="ev-wide-meta">
-                <span>📅 Sat, 21 Mar 2026 · 5:00 PM</span>
-                <span>📍 Yuvraj Club, Surat</span>
-                <span>👥 340 attending</span>
-              </div>
-            </div>
-            <div class="ev-wide-footer">
-              <div class="ev-wide-price">₹349</div>
-              <asp:Button ID="btnFeat2" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="5" />
-            </div>
-          </div>
+    </ItemTemplate>
+    <FooterTemplate>
         </div>
+    </FooterTemplate>
+</asp:Repeater>
 
-      </div>
-
-      <!-- ── POSTER GRID ── -->
-      <div class="sec-row">
-        <div>
-          <span class="sec-title">📅 Upcoming Events</span>
-          <span class="sec-meta">
-            — Showing <asp:Label ID="lblShowing" runat="server" Text="8" /> of
-            <asp:Label ID="lblTotal" runat="server" Text="124" /> events
+<!-- ── POSTER GRID ── -->
+<div class="sec-row">
+    <div>
+        <span class="sec-title">📅 Upcoming Events</span>
+        <span class="sec-meta">
+            — Showing <asp:Label ID="lblShowing" runat="server" Text="0" /> of
+            <asp:Label ID="lblTotal" runat="server" Text="0" /> events
             <asp:Label ID="lblFilterLabel" runat="server" Text="" style="color:var(--violet);font-weight:700" />
-          </span>
-        </div>
-      </div>
+        </span>
+    </div>
+</div>
 
-      <div class="event-grid">
-
-        <!-- POSTER 1 -->
+<asp:Repeater ID="rptEvents" runat="server">
+    <HeaderTemplate>
+        <div class="event-grid">
+    </HeaderTemplate>
+    <ItemTemplate>
         <div class="ev-poster">
-          <div class="ev-poster-img bg1">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-music">Music</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
+            <div class='ev-poster-img <%# GetBackgroundClass(Container.ItemIndex) %>'>
+                <div class="ev-poster-top">
+                    <span class='ev-cat-tag <%# GetTagClass(Eval("EventType")) %>'><%# Eval("EventType") %></span>
+                    <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
+                </div>
+                <span class="ev-emoji-large"><%# GetEventEmoji(Eval("EventType")) %></span>
+                <div class="ev-poster-bottom">
+                    <div class="ev-poster-date">📅 <%# FormatEventDate(Eval("ReleaseDate")) %></div>
+                </div>
             </div>
-            <span class="ev-emoji-large">🎵</span>
-            <span class="ev-ribbon ribbon-trending">TRENDING</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Sat, 18 Mar · 8:00 PM onwards</div>
+            <div class="ev-poster-body">
+                <div class="ev-poster-name"><%# Eval("Title") %></div>
+                <div class="ev-poster-loc">🗣️ <%# Eval("Language") %></div>
+                <div class="ev-poster-att">⏱️ <%# Eval("DurationMins") %> mins</div>
+                <div class="ev-poster-footer">
+                    <div class="ev-poster-price free"><%# Eval("Genre") %></div>
+                    <asp:Button ID="btnBookPoster" runat="server" CssClass="ev-book-btn" Text="Book Now"
+                        OnClick="btnBook_Click" CommandArgument='<%# Eval("EventId") %>' />
+                </div>
             </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">EDM Night Surat 2026</div>
-            <div class="ev-poster-loc">📍 VNSGU Campus, Surat</div>
-            <div class="ev-poster-att">👥 850 attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price">₹799</div>
-              <asp:Button ID="btnBook1" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="2" />
-            </div>
-          </div>
         </div>
-
-        <!-- POSTER 2 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg3">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-film">Film</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">🎬</span>
-            <span class="ev-ribbon ribbon-free">FREE</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Tue, 25 Mar · 10:00 AM</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Surat International Film Festival</div>
-            <div class="ev-poster-loc">📍 Diamond City Hall, Surat</div>
-            <div class="ev-poster-att">👥 1,200 attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price free">Free Entry</div>
-              <asp:Button ID="btnBook2" runat="server" CssClass="ev-book-btn" Text="Register"
-                OnClick="btnBook_Click" CommandArgument="3" />
-            </div>
-          </div>
+    </ItemTemplate>
+    <FooterTemplate>
         </div>
-
-        <!-- POSTER 3 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg4">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-food">Food</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">🍽️</span>
-            <span class="ev-ribbon ribbon-free">FREE</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Thu, 2 Apr · 11:00 AM</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Food Carnival Surat 2026</div>
-            <div class="ev-poster-loc">📍 VR Mall, Surat</div>
-            <div class="ev-poster-att">👥 500+ attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price free">Free Entry</div>
-              <asp:Button ID="btnBook3" runat="server" CssClass="ev-book-btn" Text="Explore"
-                OnClick="btnBook_Click" CommandArgument="4" />
-            </div>
-          </div>
-        </div>
-
-        <!-- POSTER 4 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg5">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-sports">Sports</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">🏅</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Wed, 15 Apr · 5:00 AM</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Surat Marathon 2026</div>
-            <div class="ev-poster-loc">📍 Nehru Bridge, Surat</div>
-            <div class="ev-poster-att">👥 3,000+ attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price">₹250</div>
-              <asp:Button ID="btnBook4" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="6" />
-            </div>
-          </div>
-        </div>
-
-        <!-- POSTER 5 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg7">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-arts">Arts</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">🎨</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Fri, 18 Apr · Multiple Dates</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Surat Art &amp; Craft Exhibition 2026</div>
-            <div class="ev-poster-loc">📍 Town Hall, Surat</div>
-            <div class="ev-poster-att">👥 600 attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price">₹150</div>
-              <asp:Button ID="btnBook5" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="7" />
-            </div>
-          </div>
-        </div>
-
-        <!-- POSTER 6 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg2">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-dance">Dance</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">💃</span>
-            <span class="ev-ribbon ribbon-hot">HOT</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Sat, 12 Apr · 7:30 PM</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Bollywood Dance Night — SVNIT</div>
-            <div class="ev-poster-loc">📍 SVNIT Campus, Surat</div>
-            <div class="ev-poster-att">👥 780 attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price">₹449</div>
-              <asp:Button ID="btnBook6" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="8" />
-            </div>
-          </div>
-        </div>
-
-        <!-- POSTER 7 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg8">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-fest">Festival</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">🎆</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Sun, 22 Mar · 7:00 PM</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Summer Beats Music Festival</div>
-            <div class="ev-poster-loc">📍 Dumas Beach, Surat</div>
-            <div class="ev-poster-att">👥 1,500 attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price">₹599</div>
-              <asp:Button ID="btnBook7" runat="server" CssClass="ev-book-btn" Text="Book Now"
-                OnClick="btnBook_Click" CommandArgument="9" />
-            </div>
-          </div>
-        </div>
-
-        <!-- POSTER 8 -->
-        <div class="ev-poster">
-          <div class="ev-poster-img bg6">
-            <div class="ev-poster-top">
-              <span class="ev-cat-tag tag-comedy">Comedy</span>
-              <span class="ev-heart" onclick="toggleHeart(this)">♡</span>
-            </div>
-            <span class="ev-emoji-large">🎤</span>
-            <span class="ev-ribbon ribbon-limited">LIMITED</span>
-            <div class="ev-poster-bottom">
-              <div class="ev-poster-date">📅 Fri, 5 Apr · 8:00 PM</div>
-            </div>
-          </div>
-          <div class="ev-poster-body">
-            <div class="ev-poster-name">Open Mic Night — Cafe Blend</div>
-            <div class="ev-poster-loc">📍 Cafe Blend, Surat</div>
-            <div class="ev-poster-att">👥 120 attending</div>
-            <div class="ev-poster-footer">
-              <div class="ev-poster-price free">Free Entry</div>
-              <asp:Button ID="btnBook8" runat="server" CssClass="ev-book-btn" Text="Register"
-                OnClick="btnBook_Click" CommandArgument="10" />
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /event-grid -->
+    </FooterTemplate>
+</asp:Repeater>
 
       <!-- ── PAGINATION ── -->
       <div class="pagination">
@@ -585,4 +406,3 @@
 </script>
 </body>
 </html>
-

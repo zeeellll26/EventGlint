@@ -252,6 +252,7 @@
       <a class="nav-item" href="Event.aspx"><span class="icon">🎪</span> Event</a>
       <a class="nav-item" href="Shows.aspx"><span class="icon">🎭</span> Shows</a>
       <a class="nav-item" href="Hall.aspx"><span class="icon">🏛️</span> Hall</a>
+        <a class="nav-item" href="MyBookings.aspx"><span class="icon">🎟️</span> My Bookings</a>
       <a class="nav-item" href="ContactUs.aspx"><span class="icon">📞</span> Contact Us</a>
       <a class="nav-item" href="AboutUs.aspx"><span class="icon">ℹ️</span> About Us</a>
     </nav>
@@ -353,147 +354,144 @@
       </div>
 
       <!-- ── TWO COLUMN ── -->
-      <div class="two-col">
+<div class="two-col">
 
-        <!-- LEFT: Upcoming Events -->
-        <div>
-          <div class="sec-header">
-            <div class="sec-title">📅 Upcoming Events</div>
-            <a class="see-all" href="Event.aspx">See All →</a>
+  <!-- LEFT: Upcoming Events -->
+  <div>
+    <div class="sec-header">
+      <div class="sec-title">📅 Upcoming Events</div>
+      <a class="see-all" href="Event.aspx">See All →</a>
+    </div>
+    
+    <asp:Repeater ID="rptUpcoming" runat="server">
+      <HeaderTemplate>
+        <div class="events-grid">
+      </HeaderTemplate>
+      <ItemTemplate>
+        <div class="event-card">
+          <div class='event-img <%# GetEventBackgroundClass(Eval("EventType")) %>'>
+            <%# GetEventEmoji(Eval("EventType")) %>
           </div>
-          <div class="events-grid">
-
-            <div class="event-card">
-              <div class="event-img holi">🎨</div>
-              <div class="event-info">
-                <div class="event-date">4 March, 2026</div>
-                <div class="event-name">Biggest Holi Celebration</div>
-                <div class="event-loc">📍 Surat, Gujarat</div>
-              </div>
-              <div class="event-meta">
-                <div class="event-price">₹499</div>
-                <asp:Button ID="btnAttend1" runat="server" CssClass="attend-btn" Text="Attend" CommandArgument="1" />
-              </div>
-            </div>
-
-            <div class="event-card">
-              <div class="event-img music">🎵</div>
-              <div class="event-info">
-                <div class="event-date">18 March, 2026</div>
-                <div class="event-name">EDM Night Surat 2026</div>
-                <div class="event-loc">📍 VNSGU Campus, Surat</div>
-              </div>
-              <div class="event-meta">
-                <div class="event-price">₹799</div>
-                <asp:Button ID="btnAttend2" runat="server" CssClass="attend-btn" Text="Attend" CommandArgument="2" />
-              </div>
-            </div>
-
-            <div class="event-card">
-              <div class="event-img film">🎬</div>
-              <div class="event-info">
-                <div class="event-date">25 March, 2026</div>
-                <div class="event-name">Surat International Film Fest</div>
-                <div class="event-loc">📍 Diamond City Hall, Surat</div>
-              </div>
-              <div class="event-meta">
-                <div class="event-price free">Free</div>
-                <asp:Button ID="btnAttend3" runat="server" CssClass="attend-btn" Text="Attend" CommandArgument="3" />
-              </div>
-            </div>
-
+          <div class="event-info">
+            <div class="event-date"><%# FormatEventDate(Eval("ReleaseDate")) %></div>
+            <div class="event-name"><%# Eval("Title") %></div>
+            <div class="event-loc">🗣️ <%# Eval("Language") %></div>
+          </div>
+          <div class="event-meta">
+            <div class="event-price"><%# Eval("Genre") %></div>
+            <asp:Button ID="btnAttendEvent" runat="server" CssClass="attend-btn" 
+              Text="Attend" CommandArgument='<%# Eval("EventId") %>' 
+              OnClick="btnAttend_Click" />
           </div>
         </div>
-
-        <!-- RIGHT: Promo + Categories -->
-        <div class="right-col">
-
-          <div class="promo-card">
-            <div class="promo-tag">🎁 Limited Offer</div>
-            <div class="promo-title">Claim 4 Free Tickets!</div>
-            <div class="promo-sub">Upgrade your account and unlock 4 free passes to any event of your choice.</div>
-            <div class="promo-row">
-              <asp:Button ID="btnUpgrade" runat="server" CssClass="claim-btn" Text="Upgrade Now" />
-              <div class="qr-block">
-                <div class="qr-box">📱</div>
-                <div class="qr-label">Scan to Download</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="cat-panel">
-            <div class="sec-header" style="margin-bottom:14px">
-              <div class="sec-title" style="font-size:17px">Categories</div>
-              <a class="see-all" style="font-size:12px" href="Event.aspx">View All →</a>
-            </div>
-            <div class="cats">
-              <div class="cat-item"><span class="cat-emoji">🎵</span><div class="cat-name">Music</div><div class="cat-count">48 events</div></div>
-              <div class="cat-item"><span class="cat-emoji">🎬</span><div class="cat-name">Film</div><div class="cat-count">22 events</div></div>
-              <div class="cat-item"><span class="cat-emoji">🎮</span><div class="cat-name">Gaming</div><div class="cat-count">15 events</div></div>
-              <div class="cat-item"><span class="cat-emoji">🎨</span><div class="cat-name">Arts</div><div class="cat-count">31 events</div></div>
-            </div>
-          </div>
-
+      </ItemTemplate>
+      <FooterTemplate>
         </div>
-      </div><!-- /two-col -->
+      </FooterTemplate>
+    </asp:Repeater>
+  </div>
 
-      <!-- ── BOTTOM GRID ── -->
-      <div class="bottom-grid">
+  <!-- RIGHT: Promo + Categories -->
+  <div class="right-col">
 
-        <!-- Trending Events -->
-        <div class="panel">
-          <div class="sec-header">
-            <div class="sec-title">🔥 Trending Events</div>
-            <a class="see-all" href="Event.aspx">See All →</a>
-          </div>
-          <div class="popular-list">
-            <div class="popular-item">
-              <div class="rank top">1</div>
-              <div class="pop-img" style="background:linear-gradient(135deg,#fde68a,#fca5a5)">🎨</div>
-              <div class="pop-info"><div class="pop-name">Holi Color Run</div><div class="pop-loc">📍 Ring Road, Surat</div></div>
-              <div class="pop-price">₹299</div>
-            </div>
-            <div class="popular-item">
-              <div class="rank top">2</div>
-              <div class="pop-img" style="background:linear-gradient(135deg,#93c5fd,#c084fc)">🎵</div>
-              <div class="pop-info"><div class="pop-name">Summer Beats Festival</div><div class="pop-loc">📍 Dumas Beach, Surat</div></div>
-              <div class="pop-price">₹599</div>
-            </div>
-            <div class="popular-item">
-              <div class="rank">3</div>
-              <div class="pop-img" style="background:linear-gradient(135deg,#6ee7b7,#67e8f9)">🎭</div>
-              <div class="pop-info"><div class="pop-name">Comedy Night Live</div><div class="pop-loc">📍 Yuvraj Club, Surat</div></div>
-              <div class="pop-price">₹349</div>
-            </div>
-            <div class="popular-item">
-              <div class="rank">4</div>
-              <div class="pop-img" style="background:linear-gradient(135deg,#fde68a,#fb923c)">🍽️</div>
-              <div class="pop-info"><div class="pop-name">Food Carnival Surat</div><div class="pop-loc">📍 VR Mall, Surat</div></div>
-              <div class="pop-price free">Free</div>
-            </div>
-          </div>
+    <div class="promo-card">
+      <div class="promo-tag">🎁 Limited Offer</div>
+      <div class="promo-title">Claim 4 Free Tickets!</div>
+      <div class="promo-sub">Upgrade your account and unlock 4 free passes to any event of your choice.</div>
+      <div class="promo-row">
+        <asp:Button ID="btnUpgrade" runat="server" CssClass="claim-btn" 
+          Text="Upgrade Now" OnClick="btnUpgrade_Click" />
+        <div class="qr-block">
+          <div class="qr-box">📱</div>
+          <div class="qr-label">Scan to Download</div>
         </div>
+      </div>
+    </div>
 
-        <!-- Map -->
-        <div class="panel">
-          <div class="sec-header">
-            <div class="sec-title">🗺️ Events Near You</div>
-            <a class="see-all" href="#">Open Map →</a>
+    <div class="cat-panel">
+      <div class="sec-header" style="margin-bottom:14px">
+        <div class="sec-title" style="font-size:17px">Categories</div>
+        <a class="see-all" style="font-size:12px" href="Event.aspx">View All →</a>
+      </div>
+      
+      <asp:Repeater ID="rptCategories" runat="server">
+        <HeaderTemplate>
+          <div class="cats">
+        </HeaderTemplate>
+        <ItemTemplate>
+          <div class="cat-item">
+            <span class="cat-emoji"><%# GetCategoryEmoji(Eval("Category")) %></span>
+            <div class="cat-name"><%# Eval("Category") %></div>
+            <div class="cat-count"><%# Eval("EventCount") %> events</div>
           </div>
-          <div class="map-box">
-            <div class="map-grid"></div>
-            <div class="map-pin"></div>
+        </ItemTemplate>
+        <FooterTemplate>
           </div>
-          <div class="map-badges">
-            <span class="map-badge active">All</span>
-            <span class="map-badge">Music 🎵</span>
-            <span class="map-badge">Film 🎬</span>
-            <span class="map-badge">Food 🍽️</span>
-            <span class="map-badge">Arts 🎨</span>
+        </FooterTemplate>
+      </asp:Repeater>
+    </div>
+
+  </div>
+</div><!-- /two-col -->
+
+<!-- ── BOTTOM GRID ── -->
+<div class="bottom-grid">
+
+  <!-- Trending Events -->
+  <div class="panel">
+    <div class="sec-header">
+      <div class="sec-title">🔥 Trending Events</div>
+      <a class="see-all" href="Event.aspx">See All →</a>
+    </div>
+    
+    <asp:Repeater ID="rptTrending" runat="server">
+      <HeaderTemplate>
+        <div class="popular-list">
+      </HeaderTemplate>
+      <ItemTemplate>
+        <div class="popular-item">
+          <div class='<%# GetRankClass(Container.ItemIndex) %>'>
+            <%# Container.ItemIndex + 1 %>
+          </div>
+          <div class="pop-img" style='background:<%# GetPopImageGradient(Container.ItemIndex) %>'>
+            <%# GetEventEmoji(Eval("EventType")) %>
+          </div>
+          <div class="pop-info">
+            <div class="pop-name"><%# Eval("Title") %></div>
+            <div class="pop-loc">📅 <%# FormatEventDate(Eval("ReleaseDate")) %></div>
+          </div>
+          <div class='pop-price <%# Eval("BookingCount").ToString() == "0" ? "free" : "" %>'>
+            <%# Eval("BookingCount").ToString() == "0" ? "New" : Eval("BookingCount") + " bookings" %>
           </div>
         </div>
+      </ItemTemplate>
+      <FooterTemplate>
+        </div>
+      </FooterTemplate>
+    </asp:Repeater>
+  </div>
 
-      </div><!-- /bottom-grid -->
+  <!-- Map -->
+  <div class="panel">
+    <div class="sec-header">
+      <div class="sec-title">🗺️ Events Near You</div>
+      <a class="see-all" href="#">Open Map →</a>
+    </div>
+    <div class="map-box">
+      <div class="map-grid"></div>
+      <div class="map-pin"></div>
+    </div>
+    <div class="map-badges">
+      <span class="map-badge active">All</span>
+      <span class="map-badge">Music 🎵</span>
+      <span class="map-badge">Film 🎬</span>
+      <span class="map-badge">Food 🍽️</span>
+      <span class="map-badge">Arts 🎨</span>
+    </div>
+  </div>
+
+</div><!-- /bottom-grid -->
+
     </div><!-- /content -->
   </main>
 

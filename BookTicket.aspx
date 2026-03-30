@@ -444,14 +444,7 @@
                             <span class="label">Total</span>
                             <span class="value">₹<asp:Label ID="lblSumTotal" runat="server" Text="0" /></span>
                         </div>
-                        <div style="padding:16px 20px">
-                            <asp:Button ID="btnBookNow" runat="server" Text="🎟️ Confirm Booking"
-                                CssClass="book-btn" OnClick="btnBookNow_Click"
-                                OnClientClick="return validateBooking();" />
-                            <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--muted)">
-                                🔒 Secure booking &nbsp;·&nbsp; Seats held for 10 mins after confirm
-                            </div>
-                        </div>
+                        
                     </div>
                 </div><!-- /right -->
 
@@ -514,10 +507,10 @@
         var total = Math.max(0, subtotal + fee - discount);
 
         setLabel('lblSumSubtotal', subtotal.toFixed(0));
-        setLabel('lblSumFee',      fee.toFixed(0));
+        setLabel('lblSumFee', fee.toFixed(0));
         setLabel('lblSumDiscount', discount.toFixed(0));
-        setLabel('lblSumTotal',    total.toFixed(0));
-        setLabel('lblSumSeats',    selectedSeats.length > 0 ? selectedSeats.length + ' seat(s)' : 'None selected');
+        setLabel('lblSumTotal', total.toFixed(0));
+        setLabel('lblSumSeats', selectedSeats.length > 0 ? selectedSeats.length + ' seat(s)' : 'None selected');
     }
 
     function setLabel(id, val) {

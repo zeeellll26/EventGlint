@@ -11,7 +11,7 @@ namespace EventGlint
 {
 
 
-    public partial class BookTicket
+    public partial class BookHall
     {
 
         /// <summary>
@@ -24,22 +24,13 @@ namespace EventGlint
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// hfSelectedShowId control.
+        /// hfHallId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfSelectedShowId;
-
-        /// <summary>
-        /// hfSelectedSeats control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfSelectedSeats;
+        protected global::System.Web.UI.WebControls.HiddenField hfHallId;
 
         /// <summary>
         /// hfCouponId control.
@@ -58,6 +49,15 @@ namespace EventGlint
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hfDiscount;
+
+        /// <summary>
+        /// hfIsAvailable control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIsAvailable;
 
         /// <summary>
         /// lblAvatarInitial control.
@@ -150,121 +150,193 @@ namespace EventGlint
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl step3div;
 
         /// <summary>
-        /// lblEventEmoji control.
+        /// lblHallName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEventEmoji;
+        protected global::System.Web.UI.WebControls.Label lblHallName;
 
         /// <summary>
-        /// lblEventTitle control.
+        /// lblVenueName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEventTitle;
+        protected global::System.Web.UI.WebControls.Label lblVenueName;
 
         /// <summary>
-        /// lblEventType control.
+        /// lblHallType control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEventType;
+        protected global::System.Web.UI.WebControls.Label lblHallType;
 
         /// <summary>
-        /// lblLanguage control.
+        /// lblCapacity control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblLanguage;
+        protected global::System.Web.UI.WebControls.Label lblCapacity;
 
         /// <summary>
-        /// lblRating control.
+        /// lblHallDesc control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblRating;
+        protected global::System.Web.UI.WebControls.Label lblHallDesc;
 
         /// <summary>
-        /// lblDuration control.
+        /// txtBookingDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDuration;
+        protected global::System.Web.UI.WebControls.TextBox txtBookingDate;
 
         /// <summary>
-        /// lblDescription control.
+        /// ddlDays control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDescription;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDays;
 
         /// <summary>
-        /// pnlSelectShow control.
+        /// ddlStartTime control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSelectShow;
+        protected global::System.Web.UI.WebControls.DropDownList ddlStartTime;
 
         /// <summary>
-        /// rptShows control.
+        /// ddlPurpose control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptShows;
+        protected global::System.Web.UI.WebControls.DropDownList ddlPurpose;
 
         /// <summary>
-        /// pnlNoShows control.
+        /// txtGuests control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoShows;
+        protected global::System.Web.UI.WebControls.TextBox txtGuests;
 
         /// <summary>
-        /// pnlSeatMap control.
+        /// txtVenueAddress control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlSeatMap;
+        protected global::System.Web.UI.WebControls.TextBox txtVenueAddress;
 
         /// <summary>
-        /// litSeatMap control.
+        /// txtRequirements control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litSeatMap;
+        protected global::System.Web.UI.WebControls.TextBox txtRequirements;
 
         /// <summary>
-        /// btnConfirmSeats control.
+        /// btnCheckAvailability control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnConfirmSeats;
+        protected global::System.Web.UI.WebControls.Button btnCheckAvailability;
+
+        /// <summary>
+        /// pnlAvailability control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlAvailability;
+
+        /// <summary>
+        /// lblAvailability control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblAvailability;
+
+        /// <summary>
+        /// pnlPriceBreakdown control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlPriceBreakdown;
+
+        /// <summary>
+        /// lblPricePerDay control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblPricePerDay;
+
+        /// <summary>
+        /// lblDaysCalc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDaysCalc;
+
+        /// <summary>
+        /// lblSubtotalCalc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSubtotalCalc;
+
+        /// <summary>
+        /// lblFeeCalc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblFeeCalc;
+
+        /// <summary>
+        /// lblTotalCalc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTotalCalc;
 
         /// <summary>
         /// pnlCoupon control.
@@ -303,22 +375,13 @@ namespace EventGlint
         protected global::System.Web.UI.WebControls.Label lblCouponMsg;
 
         /// <summary>
-        /// lblSumEvent control.
+        /// lblSumHall control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblSumEvent;
-
-        /// <summary>
-        /// lblSumShow control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblSumShow;
+        protected global::System.Web.UI.WebControls.Label lblSumHall;
 
         /// <summary>
         /// lblSumVenue control.
@@ -330,13 +393,31 @@ namespace EventGlint
         protected global::System.Web.UI.WebControls.Label lblSumVenue;
 
         /// <summary>
-        /// lblSumSeats control.
+        /// lblSumDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblSumSeats;
+        protected global::System.Web.UI.WebControls.Label lblSumDate;
+
+        /// <summary>
+        /// lblSumDays control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSumDays;
+
+        /// <summary>
+        /// lblSumPurpose control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSumPurpose;
 
         /// <summary>
         /// lblSumSubtotal control.
@@ -373,5 +454,14 @@ namespace EventGlint
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblSumTotal;
+
+        /// <summary>
+        /// btnBookNow control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnBookNow;
     }
 }
